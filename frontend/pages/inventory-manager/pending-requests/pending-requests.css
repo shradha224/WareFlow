@@ -1,0 +1,92 @@
+.pending-table{
+    min-width:900px;
+}
+
+.production-table{
+    min-width:1000px;
+}
+
+.table-wrapper{
+    margin-top:8px;
+}
+
+.pending-table th:last-child,.pending-table td:last-child {
+    width: 200px;
+}
+
+.action-buttons{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+.approve-btn{
+    border:none;
+    background:#1DA1F2;
+    color:#FFFFFF;
+    padding:9px 18px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.approve-btn:hover{
+    background:#0B8BD9;
+}
+
+.reject-btn{
+    border:1px solid #F3D6D6;
+    background:#FFFFFF;
+    color:#E74C3C;
+    padding:9px 18px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.reject-btn:hover{
+    background:#FDECEC;
+}
+
+.dispatch-btn{
+    border:none;
+    background:#2F80ED;
+    color:#FFFFFF;
+    padding:9px 22px;
+    border-radius:10px;
+    font-size:15px;
+    font-weight:500;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.dispatch-btn:hover{
+    background:#1668D6;
+}
+
+.card + .card{
+    margin-top:32px;
+}
+
+@media(max-width:768px){
+    .pending-table{
+        min-width:820px;
+    }
+    .production-table{
+        min-width:980px;
+    }
+
+    .action-buttons{
+        gap:8px;
+    }
+
+    .approve-btn,.reject-btn,.dispatch-btn{
+        font-size:13px;
+        padding:8px 14px;
+    }
+}

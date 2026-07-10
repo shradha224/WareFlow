@@ -1,0 +1,9 @@
+.inventory-table{
+    min-width:700px;
+}
+
+@media(max-width:480px){
+    .inventory-table{
+        min-width:650px;
+    }
+}

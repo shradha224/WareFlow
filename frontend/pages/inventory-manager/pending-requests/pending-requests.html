@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Requests</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="../../../components/sidebar/sidebar.css">
+    <link rel="stylesheet" href="pending-requests.css">
+</head>
+
+<body>
+<div class="container">
+    <aside id="sidebar" class="sidebar">
+        <div class="logo-container">
+            <img src="../../../assets/images/logo.png" class="logo" alt="WareFlow Logo">
+        </div>
+
+        <nav class="sidebar-menu">
+            <a href="../warehouse-stock/warehouse-stock.html" class="menu-item"> Warehouse Stock</a>
+            <a href="../raw-material-qc/raw-material-qc.html"class="menu-item"> QC Check</a>
+            <a href="#" class="menu-item active">Pending Requests</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn">
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <main class="content">
+        <header class="page-header">
+            <div class="header-left">
+                <button id="menu-toggle">
+                    ☰
+                </button>
+                <div>
+                    <h1 class="page-title">Review Requests</h1>
+                    <p class="page-subtitle">Review and fulfill raw material requests and dispatch
+                        components to the floor shop.</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">Pending Material Request</h2>
+            </div>
+            <div class="table-wrapper">
+                <table class="table pending-table">
+                    <thead>
+                        <tr>
+                            <th>Component ID</th>
+                            <th>Part / Material</th>
+                            <th>Requested Quantity</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>C002</td>
+                            <td>Steel Plate</td>
+                            <td><strong>300 units</strong></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="approve-btn">Approve & Fulfill</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">Production Request</h2>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="table production-table">
+                    <thead>
+                        <tr>
+                            <th>Batch ID</th>
+                            <th>Product</th>
+                            <th>Target Qty</th>
+                            <th>Requested On</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>BCH-2026-0008</td>
+                            <td>Ceiling Fan</td>
+                            <td>200 units</td>
+                            <td>6/29/2026, 11:20 AM</td>
+                            <td>
+                                <span class="status warning">Pending</span>
+                            </td>
+                            <td>
+                                <button class="dispatch-btn">Dispatch</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="../../../components/sidebar/sidebar.js"></script>
+<script src="pending-requests.js"></script>
+</body>
+</html>

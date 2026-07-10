@@ -1,0 +1,268 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:'Poppins',sans-serif;
+    background:#F5F7FA;
+    color:#31363F;
+}
+
+.container{
+    display:flex;
+    min-height:100vh;
+    padding-left:260px;
+}
+
+.content{
+    flex:1;
+    padding:36px;
+    transition:.3s;
+    min-width:0;
+}
+
+.page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    margin-bottom:32px;
+}
+
+.header-left{
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
+
+.header-right{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.page-title{
+    font-size:30px;
+    font-weight:600;
+    color:#31363F;
+    margin-bottom:6px;
+}
+
+.page-subtitle{
+    font-size:15px;
+    color:#7A7A7A;
+}
+
+#menu-toggle{
+    display:none;
+    border:none;
+    background:none;
+    cursor:pointer;
+    font-size:28px;
+}
+
+.card{
+    background:#FFFFFF;
+    border-radius:18px;
+    padding:28px;
+    box-shadow:0 6px 18px rgba(0,0,0,.05);
+    min-width: 0;
+}
+
+.card-header{
+    margin-bottom:20px;
+}
+
+.card-title{
+    font-size:18px;
+    font-weight:600;
+    color:#31363F;
+}
+
+.table-wrapper{
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+}
+
+.table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.table th{
+    text-align:left;
+    padding:18px;
+    background:#F3F5F7;
+    font-size:14px;
+    font-weight:600;
+    color:#31363F;
+}
+
+.table td{
+    padding:18px;
+    border-bottom:1px solid #ECECEC;
+    font-size:15px;
+    color:#31363F;
+}
+
+.table tbody tr:hover{
+    background:#FAFAFA;
+}
+
+button{
+    font-family:'Poppins',sans-serif;
+}
+
+.primary-btn{
+    border:none;
+    background:#31363F;
+    color:white;
+    padding:13px 24px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.primary-btn:hover{
+    background:#444B55;
+}
+
+.secondary-btn{
+    border:1px solid #31363F;
+    background:white;
+    color:#31363F;
+    padding:13px 24px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.secondary-btn:hover{
+    background:#31363F;
+    color:white;
+}
+
+.status{
+    display:inline-block;
+    padding:7px 14px;
+    border-radius:30px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.normal{
+    background:#DDF7E7;
+    color:#0D8A41;
+}
+
+.warning{
+    background:#FFF2CC;
+    color:#B8860B;
+}
+
+.danger{
+    background:#FAD9D9;
+    color:#C62828;
+}
+
+@media (max-width:1400px){
+    .content{
+        padding:30px;
+    }
+    .page-title{
+        font-size:28px;
+    }
+}
+
+@media (max-width:1200px){
+    .content{
+        padding:24px;
+    }
+    .page-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:20px;
+    }
+    .header-right{
+        width:100%;
+        justify-content:flex-start;
+    }
+}
+
+@media (max-width:992px){
+    .container{
+        padding-left:0;
+    }
+    .content{
+        width:100%;
+        padding:20px;
+    }
+    #menu-toggle{
+        display:block;
+    }
+}
+
+@media (max-width:768px){
+    .content{
+        padding:16px;
+    }
+    .page-header{
+        flex-direction:column;
+        align-items:stretch;
+        gap:18px;
+    }
+    .header-left{
+        width:100%;
+        align-items:flex-start;
+    }
+    .header-right{
+        width:100%;
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+    }
+    .header-right button{
+        width:100%;
+    }
+    .page-title{
+        font-size:26px;
+    }
+}
+
+@media (max-width:480px){
+    .content{
+        padding:14px;
+    }
+    .page-title{
+        font-size:24px;
+        line-height:1.3;
+    }
+    .page-subtitle{
+        font-size:13px;
+    }
+    .card{
+        padding:18px;
+    }
+}
+
+@media (max-width:380px){
+    .content{
+        padding:12px;
+    }
+    .page-title{
+        font-size:22px;
+    }
+    .header-left{
+        gap:12px;
+    }
+}

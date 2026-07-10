@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en"
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QC Check</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="../../../components/sidebar/sidebar.css">
+    <link rel="stylesheet" href="raw-material-qc.css">
+</head>
+
+<body>
+<div class="container">
+    <aside id="sidebar" class="sidebar">
+        <div class="logo-container">
+            <img src="../../../assets/images/logo.png" class="logo" alt="WareFlow Logo">
+        </div>
+
+        <nav class="sidebar-menu">
+            <a href="../warehouse-stock/warehouse-stock.html" class="menu-item">Warehouse Stock</a>
+            <a href="#" class="menu-item active">QC Check</a>
+            <a href="../pending-requests/pending-requests.html" class="menu-item">Pending Requests</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn">Logout</button>
+        </div>
+    </aside>
+
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <main class="content">
+        <header class="page-header">
+            <div class="header-left">
+                <button id="menu-toggle">
+                    ☰
+                </button>
+                <div>
+                    <h1 class="page-title">Quality Assurance Inspection</h1>
+                    <p class="page-subtitle">Examine raw material quality and issue pass/fail certifications.</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="card qc-card">
+            <div class="card-title">
+                <h2> Quality Assurance Queue</h2>
+            </div>
+            <div class="table-wrapper">
+                <table class="table qc-table">
+                    <thead>
+                        <tr>
+                            <th>Component ID</th>
+                            <th>Part / Material</th>
+                            <th>Quantity</th>
+                            <th>Date Completed</th>
+                            <th>Inspection Certification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>C001</td>
+                            <td>Steel Plate</td>
+                            <td>300 units</td>
+                            <td>6/29/2026, 7:37:18 AM</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="pass-btn">Pass</button>
+                                    <button class="fail-btn">Fail</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="../../../components/sidebar/sidebar.js"></script>
+<script src="../../../scripts/api.js"></script>
+<script src="raw-material-qc.js"></script>
+
+</body>
+</html>

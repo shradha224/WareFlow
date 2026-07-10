@@ -1,0 +1,57 @@
+.qc-table{
+    min-width:900px;
+}
+.table-wrapper{
+    margin-top:8px;
+}
+
+.action-buttons{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:10px;
+}
+
+.pass-btn{
+    border:none;
+    background: #22C55E;
+    color:#FFFFFF;
+    padding:8px 18px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    transition:.25s;
+}
+.pass-btn:hover{
+    background:#16A34A;
+}
+
+.fail-btn{
+    border:none;
+    background:#EF4444;
+    color:#FFFFFF;
+    padding:8px 18px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.fail-btn:hover{
+    background:#DC2626;
+}
+
+@media(max-width:480px){
+    .qc-table{
+        min-width:820px;
+    }
+    .action-buttons{
+        gap:8px;
+    }
+    .pass-btn,.fail-btn{
+        padding:7px 14px;
+        font-size:13px;
+    }
+}

@@ -1,0 +1,124 @@
+.sidebar{
+    position:fixed;
+    top:0;
+    left:0;
+    width:260px;
+    height:100vh;
+    background:#3A4352;
+    display:flex;
+    flex-direction:column;
+    padding:30px 20px;
+    transition:left .35s ease;
+    z-index:1000;
+}
+
+.sidebar-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    opacity:0;
+    visibility:hidden;
+    transition:.3s;
+    z-index:999;
+}
+
+.sidebar-overlay.show{
+    opacity:1;
+    visibility:visible;
+}
+
+.logo-container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:50px;
+}
+
+.logo{
+    width:150px;
+    height:auto;
+}
+
+.sidebar-menu{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    flex:1;
+}
+
+.menu-item{
+    display:flex;
+    align-items:center;
+    text-decoration:none;
+    color:#FFFFFF;
+    font-size:16px;
+    font-weight:500;
+    padding:15px 18px;
+    border-radius:12px;
+    transition:.25s;
+}
+
+.menu-item:hover{
+    background:#4B5563;
+}
+
+.menu-item.active{
+    background:#FFFFFF;
+    color:#1F2937;
+    font-weight:600;
+}
+
+.sidebar-footer{
+    margin-top:auto;
+}
+
+.logout-btn{
+    width:100%;
+    border:none;
+    outline:none;
+    background:#FFFFFF;
+    color:#1F2937;
+    padding:14px;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:600;
+    transition:.25s;
+}
+
+.logout-btn:hover{
+    background:#F3F4F6;
+}
+
+@media (max-width:1024px){
+    .sidebar{
+        padding:24px 16px;
+    }
+    .logo{
+        width:120px;
+    }
+}
+
+@media (max-width:992px){
+    .sidebar{
+        left:-280px;
+        width:280px;
+        box-shadow:0 10px 40px rgba(0,0,0,.25);
+    }
+    .sidebar.show{
+        left:0;
+    }
+}
+
+@media (max-width:480px){
+    .sidebar{
+        width:230px;
+    }
+    .logo{
+        width:110px;
+    }
+    .menu-item{
+        font-size:14px;
+        padding:13px 14px;
+    }
+}
