@@ -1,0 +1,259 @@
+.dashboard-layout{
+    min-height:100vh;
+    background:#F5F7FC;
+}
+.dashboard-content{
+    margin-left:260px;
+    padding:45px 40px;
+    min-height:100vh;
+}
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:2.25fr 1fr;
+    gap:35px;
+    align-items:start;
+}
+.left-column,.right-column{
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+}
+
+.top-cards{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:25px;
+}
+.stat-card{
+    min-height:175px;
+}
+.stat-card h3{
+    font-size:22px;
+    font-weight:500;
+    color:#222;
+    margin-bottom:18px;
+}
+.stat-number{
+    font-size:76px;
+    font-weight:700;
+    color:#142A63;
+    text-align:center;
+}
+
+.workload-card h2{
+    font-size:24px;
+    color:#222;
+    margin-bottom:25px;
+}
+
+.workload-card table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.workload-card th{
+    text-align:left;
+    font-size:15px;
+    text-transform:uppercase;
+    color:#5D6D89;
+    padding:15px 12px;
+    border-bottom:1px solid #ECECEC;
+}
+
+.workload-card td{
+    padding:18px 12px;
+    font-size:16px;
+    color:#444;
+}
+
+.workload-card strong{
+    color:#1D2D55;
+}
+
+.workload-card small{
+    color:#9A9A9A;
+}
+
+.blue-text{
+    color:#2196F3;
+    font-weight:600;
+}
+
+.chart-card{
+    min-height:470px;
+}
+
+.chart-card h2{
+    font-size:24px;
+    margin-bottom:30px;
+}
+
+.chart-card canvas{
+    width:100% !important;
+    height:330px !important;
+}
+
+.qc-card h2{
+    font-size:22px;
+    margin-bottom:25px;
+}
+
+.quality-block{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-bottom:35px;
+    gap:18px;
+}
+
+.quality-block p{
+    font-size:17px;
+    color:#333;
+}
+
+.quality-circle{
+    width:95px;
+    height:95px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    font-weight:700;
+}
+
+.success{
+    background:#E6FFD8;
+    border:2px solid #53B64C;
+    color:#1C3F7C;
+}
+
+.danger{
+    background:#FFE2D8;
+    border:2px solid #FF6E4A;
+    color:#1C3F7C;
+}
+
+.progress-card h2{
+    font-size:22px;
+    margin-bottom:10px;
+}
+
+.batch-id{
+    font-size:18px;
+    color:#444;
+    margin-bottom:18px;
+}
+
+.progress-bar{
+    width:100%;
+    height:18px;
+    background:#ECECEC;
+    border-radius:50px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    width:50%;
+    height:100%;
+    background:#5CA6F0;
+    border-radius:50px;
+}
+
+.progress-text{
+    text-align:right;
+    font-size:16px;
+    font-weight:600;
+    margin-top:10px;
+}
+
+.alerts-card h2{
+    font-size:22px;
+    margin-bottom:22px;
+}
+
+.alert-box{
+    background:#FFD9D9;
+    border:2px solid #FF7A7A;
+    border-radius:18px;
+    padding:18px;
+}
+
+.alert-box p{
+    font-size:17px;
+    color:#333;
+    line-height:1.5;
+    margin-bottom:18px;
+}
+
+.place-order-btn{
+    display:block;
+    margin-left:auto;
+    padding:10px 22px;
+    border:none;
+    border-radius:8px;
+    background:#D9FFC7;
+    color:#3C8C2E;
+    cursor:pointer;
+    font-size:15px;
+    transition:.25s;
+}
+
+.place-order-btn:hover{
+    background:#C8F5B3;
+}
+
+@media(max-width:992px){
+    .dashboard-content{
+        margin-left:0;
+        padding:30px 22px;
+    }
+    .dashboard-grid{
+        grid-template-columns:1fr;
+    }
+    .right-column{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:20px;
+    }
+}
+
+@media(max-width:768px){
+    .dashboard-content{
+        padding:22px 16px;
+    }
+    .page-title{
+        font-size:42px;
+    }
+    .page-subtitle{
+        font-size:16px;
+    }
+    .top-cards{
+        grid-template-columns:1fr;
+    }
+    .right-column{
+        grid-template-columns:1fr;
+    }
+    .card{
+        padding:22px;
+    }
+    .workload-card{
+        overflow-x:auto;
+    }
+    .workload-card table{
+        min-width:650px;
+    }
+    .chart-card canvas{
+        height:260px !important;
+    }
+}
+
+@media(max-width:480px){
+    .page-title{
+        font-size:34px;
+    }
+    .stat-number{
+        font-size:54px;
+    }
+}

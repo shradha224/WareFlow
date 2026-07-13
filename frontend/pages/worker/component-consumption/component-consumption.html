@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component Consumption</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="../../../components/sidebar/sidebar.css">
+    <link rel="stylesheet" href="component-consumption.css">
+</head>
+<body>
+<div class="dashboard-layout">
+    <aside id="sidebar" class="sidebar">
+        <div class="logo-container">
+            <img src="../../../assets/images/logo.png"
+                 class="logo"
+                 alt="WareFlow Logo">
+        </div>
+        <nav class="sidebar-menu">
+            <a href="component-consumption.html"
+               class="menu-item active">
+               Component Consumption
+            </a>
+            <a href="../material-intake/material-intake.html"
+               class="menu-item">
+               Materials Intake
+            </a>
+            <a href="../quality-check/quality-check.html"
+               class="menu-item">
+               Quality Check & Logs
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn">
+                Logout
+            </button>
+        </div>
+    </aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <main class="dashboard-content">
+        <section class="page-header">
+            <div class="header-left">
+                <button id="menu-toggle"> ☰ </button>
+                <div>
+                    <h1 class="page-title">Component Consumption</h1>
+                    <p class="page-subtitle">Record component usage at each stage.</p>
+        </section>
+        <section class="card consumption-card">
+            <h2>
+                Process Component
+            </h2>
+            <div class="form-group">
+                <label>
+                    Active Batches
+                </label>
+                <div class="batch-selector">
+                    <button
+                        class="batch-btn"
+                        data-batch="B012">
+                        B012
+                    </button>
+                    <button
+                        class="batch-btn active"
+                        data-batch="B212">
+                        B212
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="componentId">
+                    Enter Component ID
+                </label>
+                <input
+                    id="componentId"
+                    type="text"
+                    placeholder="Enter component ID">
+            </div>
+            <div class="form-group">
+                <label for="stage">
+                    Used at Place / Stage
+                </label>
+                <select id="stage">
+                    <option value="">Select Stage</option>
+                    <option>Assembly Station</option>
+                    <option>Testing</option>
+                    <option>Quality Check</option>
+                    <option>Packaging</option>
+                </select>
+            </div>
+            <button
+                id="completeBtn"
+                class="submit-btn">
+                Mark Completed
+            </button>
+        </section>
+    </main>
+</div>
+<script src="../../../components/sidebar/sidebar.js"></script>
+<script src="component-consumption.js"></script>
+</body>
+</html>

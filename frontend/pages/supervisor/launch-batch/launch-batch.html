@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launch Production Batch</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="../../../components/sidebar/sidebar.css">
+    <link rel="stylesheet" href="launch-batch.css">
+</head>
+
+<body>
+<div class="dashboard-layout">
+    <aside id="sidebar" class="sidebar">
+        <div class="logo-container">
+                <img src="../../../assets/images/logo.png" class="logo" alt="WareFlow Logo">
+        </div>
+            <nav class="sidebar-menu">
+                <a href="../dashboard/dashboard.html" class="menu-item">Dashboard</a>
+                <a href="warehouse-inventory.html" class="menu-item">Warehouse Inventory</a>
+                <a href="../system-reports/system-reports.html" class="menu-item">System Reports</a>
+                <a href="../request-raw-materials/request-raw-materials.html" class="menu-item">Request Raw Materials</a>
+                <a href="../launch-batch/launch-batch.html" class="menu-item active">Launch Batch</a>
+            </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn">Logout</button>
+        </div>
+    </aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+   
+    <main class="dashboard-content">
+        <section class="page-header">
+            <div class="header-left">
+                <button id="menu-toggle"> ☰ </button>
+                <div>
+                    <h1 class="page-title">Start Production Batch</h1>
+                </div>
+        </section>
+
+        <section class="card initialize-card">
+            <form id="initialize-form">
+                <div class="top-row">
+                    <div class="form-group">
+                        <label for="product-select">
+                            Product
+                        </label>
+                        <select id="product-select">
+                            <option value="">
+                                Choose Product
+                            </option>
+                            <option value="fan">
+                                Ceiling Fan
+                            </option>
+                            <option value="motor">
+                                Electric Motor
+                            </option>
+                            <option value="pump">
+                                Water Pump
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="overall-target">
+                            Overall Production Target (Qty)
+                        </label>
+                        <input
+                            type="number"
+                            id="overall-target"
+                            placeholder="e.g. 50 units"
+                            min="1">
+                    </div>
+                </div>
+                <div class="initialize-btn-wrapper">
+                    <button
+                        type="button"
+                        id="initialize-btn"
+                        class="initialize-btn">
+                        Initialize Batch
+                    </button>
+                </div>
+            </form>
+        </section>
+        <section class="card stage-card">
+            <form id="stage-form">
+                <h2>
+                    Set Stage Target
+                </h2>
+                <div class="form-group">
+                    <label for="stage-select">
+                        Select Stage
+                    </label>
+                    <select id="stage-select">
+                        <option value="">
+                            Choose Stage
+                        </option>
+                        <option value="assembly">
+                            Assembly
+                        </option>
+                        <option value="quality">
+                            Quality Check
+                        </option>
+                        <option value="packaging">
+                            Packaging
+                        </option>
+                        <option value="dispatch">
+                            Dispatch
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="target-time">
+                        Target Time (Hours)
+                    </label>
+                    <input
+                        type="number"
+                        id="target-time"
+                        placeholder="e.g. 2.5 hrs"
+                        step="0.1">
+                </div>
+                 <div class="form-group">
+                    <label for="target-quantity">
+                        Target Quantity (Units)
+                    </label>
+                    <input
+                        type="number"
+                        id="target-quantity"
+                        placeholder="e.g. 4 units"
+                        min="1">
+                </div>
+                <div class="stage-table-wrapper">
+                    <table id="stage-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Stage
+                                </th>
+                                <th>
+                                    Time (hrs)
+                                </th>
+                                <th>
+                                    Qty
+                                </th>
+                                <th>
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="stage-table-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="submit-wrapper">
+                    <button
+                        type="submit"
+                        class="submit-btn">
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script src="../../../components/sidebar/sidebar.js"></script>
+<script src="launch-batch.js"></script>
+</body>
+</html>

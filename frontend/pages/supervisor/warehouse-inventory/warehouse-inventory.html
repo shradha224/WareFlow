@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Inventory</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="../../../components/sidebar/sidebar.css">
+    <link rel="stylesheet" href="warehouse-inventory.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside id="sidebar" class="sidebar">
+            <div class="logo-container">
+                <img src="../../../assets/images/logo.png" class="logo" alt="WareFlow Logo">
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="../dashboard/dashboard.html" class="menu-item">Dashboard</a>
+                <a href="warehouse-inventory.html" class="menu-item active">Warehouse Inventory</a>
+                <a href="../system-reports/system-reports.html" class="menu-item">System Reports</a>
+                <a href="../request-raw-materials/request-raw-materials.html" class="menu-item">Request Raw Materials</a>
+                <a href="../launch-batch/launch-batch.html" class="menu-item">Launch Batch</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn">Logout</button>
+            </div>
+        </aside>
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+        <main class="dashboard-content">
+            <section class="page-header">
+                <div class="header-left">
+                <button id="menu-toggle"> ☰ </button>
+                <div>
+                    <h1 class="page-title">Warehouse Inventory Details</h1>
+                    <p class="page-subtitle">Real-time stock and threshold warnings.</p>
+                </div>
+            </div>
+            </section>
+            <section class="card inventory-card">
+                <div class="card-title">
+                    <h2>Current Inventory Levels</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Component ID</th>
+                                <th>Part / Material</th>
+                                <th>Description</th>
+                                <th>Current Stock Level</th>
+                                <th>Alert Threshold</th>
+                                <th>Warehouse Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body">
+                            <tr>
+                                <td>C002</td>
+                                <td><strong>Steel Plate</strong></td>
+                                <td>High-tensile structural steel plate</td>
+                                <td class="stock-value">120 units</td>
+                                <td>50 units</td>
+                                <td><span class="status-badge stock-ok">STOCK OK</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="../../../components/sidebar/sidebar.js"></script>
+    <script src="warehouse-inventory.js"></script>
+</body>
+</html>

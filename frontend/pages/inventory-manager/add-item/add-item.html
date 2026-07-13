@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="add-item.css">
+</head>
+
+<body>
+<div class="add-product-page">
+    <header class="form-header">
+        <div class="title-section">
+            <span class="plus-icon">+</span>
+            <h1 class="page-title">Add New Part</h1>
+        </div>
+        <img src="../../../assets/images/logo-dark.png" alt="WareFlow Logo"class="page-logo">
+    </header>
+
+    <section class="card form-card">
+        <form id="add-product-form">
+            <div class="form-group">
+                <label>
+                    Part Name
+                </label>
+                <input type="text" id="part-name" placeholder="Material A" required>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    Add Description
+                </label>
+                <input type="text" id="description" placeholder="e.g. cable wire"required>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    Current Stock Quantity
+                </label>
+
+                <input type="number" id="stock" placeholder="e.g. 100" required>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    Minimum Threshold Quantity
+                </label>
+                <input type="number" id="threshold" placeholder="e.g. 50" required>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="submit-btn">Submit</button>
+                <button type="button" id="back-btn" class="back-btn">Go Back</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script src="add-item.js"></script>
+</body>
+</html>

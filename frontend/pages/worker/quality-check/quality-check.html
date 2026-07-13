@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Check</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="../../../components/sidebar/sidebar.css">
+    <link rel="stylesheet" href="quality-check.css">
+</head>
+<body>
+<div class="dashboard-layout">
+    <aside id="sidebar" class="sidebar">
+        <div class="logo-container">
+            <img
+                src="../../../assets/images/logo.png"
+                alt="WareFlow Logo"
+                class="logo">
+        </div>
+        <nav class="sidebar-menu">
+            <a href="../component-consumption/component-consumption.html"
+               class="menu-item">
+                Component Consumption
+            </a>
+            <a href="../material-intake/material-intake.html"
+               class="menu-item">
+                Materials Intake
+            </a>
+            <a href="quality-check.html"
+               class="menu-item active">
+                Quality Check & Logs
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn">
+                Logout
+            </button>
+        </div>
+    </aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <main class="dashboard-content">
+        <section class="page-header">
+            <div class="header-left">
+                <button id="menu-toggle"> ☰ </button>
+                <div>
+                    <h1 class="page-title">Quality Check</h1>
+                    <p class="page-subtitle">Tag produced goods with pass or fail and record shift logs.</p>
+        </section>
+
+        <section class="card quality-card">
+            <h2>
+                Quality Check
+            </h2>
+            <form id="qualityForm">
+                <div class="form-group">
+                    <label for="productId">
+                        Enter ID
+                    </label>
+                    <input
+                        type="text"
+                        id="productId"
+                        placeholder="Enter Finished Product ID">
+                </div>
+                <div class="quality-buttons">
+                    <button
+                        type="button"
+                        class="status-btn fail-btn"
+                        data-status="FAIL">
+                        Fail
+                    </button>
+                    <button
+                        type="button"
+                        class="status-btn pass-btn"
+                        data-status="PASS">
+                        Pass
+                    </button>
+                </div>
+                <button
+                    type="submit"
+                    class="submit-btn">
+                    Mark Completed
+                </button>
+            </form>
+        </section>
+    </main>
+</div>
+<script src="../../../components/sidebar/sidebar.js"></script>
+<script src="quality-check.js"></script>
+</body>
+</html>

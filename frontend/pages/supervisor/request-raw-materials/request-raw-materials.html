@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Raw Materials</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="../../../components/sidebar/sidebar.css">
+    <link rel="stylesheet" href="request-raw-materials.css">
+</head>
+
+<body>
+<div class="dashboard-layout">
+    <aside id="sidebar" class="sidebar">
+        <div class="logo-container">
+                <img src="../../../assets/images/logo.png" class="logo" alt="WareFlow Logo">
+        </div>
+            <nav class="sidebar-menu">
+                <a href="../dashboard/dashboard.html" class="menu-item">Dashboard</a>
+                <a href="warehouse-inventory.html" class="menu-item">Warehouse Inventory</a>
+                <a href="../system-reports/system-reports.html" class="menu-item">System Reports</a>
+                <a href="../request-raw-materials/request-raw-materials.html" class="menu-item active">Request Raw Materials</a>
+                <a href="../launch-batch/launch-batch.html" class="menu-item">Launch Batch</a>
+            </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn">
+                Logout
+            </button>
+        </div>
+    </aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+ 
+    <main class="request-content">
+        <section class="page-header">
+            <div class="header-left">
+                <button id="menu-toggle"> ☰ </button>
+                <div>
+                    <h1 class="page-title">Request Raw Materials</h1>
+                </div>
+        </section>
+
+        <section class="request-card">
+            <form id="request-material-form">
+                <div class="form-group">
+                    <label for="material">Select Part/Material</label>
+                    <select id="material" required>
+                        <option value="">Select Material</option>
+                        <option value="steel">Steel Plate</option>
+                        <option value="copper">Copper Wire</option>
+                        <option value="microchip">Microchip MC-90</option>
+                        <option value="housing">Plastic Housing</option>
+                        <option value="bolt">Bolt</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity">Quantity to order</label>
+                    <input type="number" id="quantity" min="1" placeholder="e.g. 150 units" required>
+                </div>
+                <div class="button-group">
+                    <button type="button" id="cancel-btn" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="submit-btn">Submit</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+<script src="../../../components/sidebar/sidebar.js"></script>
+<script src="request-raw-materials.js"></script>
+</body>
+</html>

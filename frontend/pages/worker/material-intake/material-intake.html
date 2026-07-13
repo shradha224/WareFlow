@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floor Material Intake</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="../../../components/sidebar/sidebar.css">
+    <link rel="stylesheet" href="material-intake.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside id="sidebar" class="sidebar">
+            <div class="logo-container">
+                <img
+                    src="../../../assets/images/logo.png"
+                    alt="WareFlow Logo"
+                    class="logo">
+            </div>
+            <nav class="sidebar-menu">
+                <a href="../component-consumption/component-consumption.html"
+                    class="menu-item">
+                    Component Consumption
+                </a>
+                <a href="#"
+                    class="menu-item active">
+                    Materials Intake
+                </a>
+                <a href="../quality-check/quality-check.html"
+                    class="menu-item">
+                    Quality Check & Logs
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn">
+                    Logout
+                </button>
+            </div>
+        </aside>
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+        <main class="dashboard-content">
+            <section class="page-header">
+                <div class="header-left">
+                <button id="menu-toggle"> ☰ </button>
+                <div>
+                    <h1 class="page-title">Floor Material Intake</h1>
+                    <p class="page-subtitle">Receive components from inventory to floor house.</p>
+                </div>
+            </section>
+            <section class="card intake-card">
+                <table class="intake-table">
+                    <thead>
+                        <tr>
+                            <th>Batch ID</th>
+                            <th>Component ID</th>
+                            <th>Component</th>
+                            <th>Quantity</th>
+                            <th>Verify Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="intake-table-body">
+                        <tr>
+                            <td>
+                                BCH-2026-0008
+                            </td>
+                            <td>
+                                C002
+                            </td>
+                            <td>
+                                <strong>
+                                    Steel Plate
+                                </strong>
+                            </td>
+                            <td>
+                                <strong>
+                                    300 units
+                                </strong>
+                            </td>
+                            <td>
+                                <button
+                                    class="receive-btn"
+                                    data-batch="BCH-2026-0008"
+                                    data-component="C002">
+                                    Received
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+    <script src="../../../components/sidebar/sidebar.js"></script>
+    <script src="material-intake.js"></script>
+</body>
+</html>

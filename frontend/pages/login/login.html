@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WareFlow | Login</title>
+    <link rel="stylesheet" href="../../styles/global.css">
+    <link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+    <div class="background-overlay"></div>
+    <main class="login-container">
+        <section class="login-card">
+            <div class="logo-container">
+                <img src="../../assets/images/logo-dark.png"alt="WareFlow Logo" class="logo">
+            </div>
+            <h1 class="login-title">Welcome!</h1>
+            <p class="login-subtitle">Please enter your credentials!</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="userId">User ID</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="userId" name="userId" placeholder="e.g. john.doe@factory.com" required>
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="Enter password" required>
+                    </div>
+                </div>
+                <button type="submit" class="login-btn">
+                    Sign In to Platform
+                </button>
+            </form>
+        </section>
+    </main>
+    <script src="login.js"></script>
+</body>
+</html>

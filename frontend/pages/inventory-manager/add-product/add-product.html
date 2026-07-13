@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Product</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="add-product.css">
+</head>
+
+<body>
+    <main class="add-product-page">
+        <div class="form-header">
+            <div class="title-section">
+                <span class="plus-icon">+</span>
+                <h1 class="page-title">Add New Product</h1>
+            </div>
+            <img src="../../../assets/images/logo-dark.png" alt="WareFlow Logo" class="page-logo">
+        </div>
+
+        <section class="form-card">
+            <form id="add-product-form">
+                <div class="form-group">
+                    <label for="product-name">Product Name</label>
+                    <input type="text" id="product-name" placeholder="e.g. Ceiling Fan" required>
+                </div>
+
+                <div class="component-input-row">
+                    <div class="component-group">
+                        <label for="component-select">Component</label>
+                        <select id="component-select">
+                            <option value="">
+                                Select Component
+                            </option>
+                            <option>Steel Plate</option>
+                            <option>Copper Wire</option>
+                            <option>Cable Wire</option>
+                            <option>Bolt</option>
+                            <option>Nut</option>
+                            <option>Plastic Housing</option>
+                        </select>
+                    </div>
+                    <div class="qty-group">
+                        <label for="component-qty">Quantity</label>
+                        <input type="number" id="component-qty" placeholder="Qty" min="1">
+                    </div>
+
+                    <div class="add-btn-container">
+                        <button type="button" id="add-component-btn" class="add-btn">Add</button>
+                    </div>
+                </div>
+
+                <div class="added-components-section">
+                    <label>Components Added</label>
+                    <div id="component-list"></div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="submit-btn"> Submit</button>
+                    <button type="button" id="go-back-btn" class="back-btn">Go Back</button>
+                </div>
+            </form>
+        </section>
+    </main>
+    <script src="add-product.js"></script>
+</body>
+</html>

@@ -21,6 +21,6 @@ function openAddProductPage() {
 }
 
 function openAddItemPage() {
-    alert("Add Item Page....");
+    window.location.href = "../add-item/add-item.html";
 }
 

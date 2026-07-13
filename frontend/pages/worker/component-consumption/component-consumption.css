@@ -1,0 +1,189 @@
+.dashboard-layout{
+    display:flex;
+    min-height:100vh;
+    background:#F5F7FC;
+}
+
+.dashboard-content{
+    margin-left: 260px;
+    padding:50px 40px;
+}
+
+
+.consumption-card{
+    background:#FFFFFF;
+    border-radius:24px;
+    padding:40px;
+    box-shadow:0 8px 18px rgba(0,0,0,.12);
+    max-width:1100px;
+}
+
+.consumption-card h2{
+    font-size:32px;
+    color:#142A63;
+    margin-bottom:30px;
+}
+
+.form-group{
+    margin-bottom:30px;
+}
+
+.form-group label{
+    display:block;
+    font-size:22px;
+    margin-bottom:14px;
+    color:#2F2F2F;
+}
+
+.batch-selector{
+    display:flex;
+    gap:40px;
+    flex-wrap:wrap;
+}
+
+.batch-btn{
+    width:240px;
+    height:60px;
+    border:2px solid #E6E6E6;
+    border-radius:30px;
+    background:#FFFFFF;
+    font-size:20px;
+    color:#333;
+    cursor:pointer;
+    box-shadow:0 5px 10px rgba(0,0,0,.15);
+    transition:.25s;
+}
+
+.batch-btn:hover{
+    transform:translateY(-2px);
+}
+
+.batch-btn.active{
+    background:#CBEAF8;
+    border-color:#59A9FF;
+    color:#1F6FE5;
+}
+
+.form-group input,.form-group select{
+    width:100%;
+    height:64px;
+    border:2px solid #ECECEC;
+    border-radius:22px;
+    padding:0 24px;
+    font-size:20px;
+    background:#FFFFFF;
+    outline:none;
+    box-shadow:0 6px 12px rgba(0,0,0,.15);
+    transition:.25s;
+}
+
+.form-group input:focus,.form-group select:focus{
+    border-color:#4E9DFF;
+}
+
+.form-group select{
+    appearance:none;
+    cursor:pointer;
+}
+
+.submit-btn{
+    display:block;
+    margin:35px auto 0;
+    width:260px;
+    height:58px;
+    border:none;
+    border-radius:14px;
+    background:#CBEAF8;
+    color:#1663D3;
+    font-size:24px;
+    cursor:pointer;
+    box-shadow:0 6px 12px rgba(0,0,0,.18);
+    transition:.25s;
+}
+
+.submit-btn:hover{
+    background:#B9E4F7;
+    transform:translateY(-2px);
+}
+
+@media(max-width:992px){
+    .dashboard-content{
+        margin:0;
+        padding:30px 24px;
+    }
+    .page-title{
+        font-size:48px;
+    }
+    .page-subtitle{
+        font-size:18px;
+    }
+    .consumption-card{
+        padding:30px;
+    }
+    .batch-selector{
+        gap:20px;
+    }
+    .batch-btn{
+        width:180px;
+    }
+}
+
+@media(max-width:768px){
+    .dashboard-content{
+        padding:20px 16px;
+        margin:0;
+    }
+    .page-title{
+        font-size:36px;
+    }
+    .page-subtitle{
+        font-size:17px;
+    }
+    .consumption-card{
+        padding:22px;
+    }
+    .consumption-card h2{
+        font-size:26px;
+    }
+    .form-group label{
+        font-size:18px;
+    }
+
+    .form-group input,.form-group select{
+        height:56px;
+        font-size:17px;
+    }
+    .batch-selector{
+        flex-direction:column;
+        gap:16px;
+    }
+    .batch-btn{
+        width:100%;
+    }
+    .submit-btn{
+        width:100%;
+        font-size:20px;
+    }
+}
+
+@media(max-width:480px){
+    .page-title{
+        font-size:30px;
+    }
+    .page-subtitle{
+        font-size:15px;
+    }
+    .consumption-card h2{
+        font-size:22px;
+    }
+    .form-group label{
+        font-size:16px;
+    }
+    .form-group input,.form-group select{
+        font-size:16px;
+    }
+    .submit-btn{
+        height:54px;
+        font-size:18px;
+    }
+}

@@ -1,0 +1,138 @@
+.dashboard-layout{
+    margin-left: 260px;
+    min-height:100vh;
+    background:#F5F7FC;
+}
+
+.dashboard-content{
+    padding:50px 40px;
+}
+
+.intake-card{
+    background:#fff;
+    border-radius:26px;
+    padding:36px;
+    margin-top:40px;
+    box-shadow:0 8px 18px rgba(0,0,0,.12);
+    overflow-x:auto;
+}
+
+.intake-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:900px;
+}
+
+.intake-table thead th{
+    text-align:left;
+    padding:18px 12px;
+    font-size:15px;
+    font-weight:600;
+    text-transform:uppercase;
+    color:#5D6D89;
+    border-bottom:1px solid #ECECEC;
+}
+
+.intake-table tbody td{
+    padding:26px 12px;
+    font-size:20px;
+    color:#303030;
+    border-bottom:1px solid #F1F1F1;
+    vertical-align:middle;
+}
+
+.intake-table tbody tr:last-child td{
+    border-bottom:none;
+}
+
+.intake-table strong{
+    color:#1D2D55;
+    font-weight:700;
+}
+
+.receive-btn{
+    min-width:160px;
+    height:48px;
+    border:none;
+    border-radius:12px;
+    background:#CFEFFF;
+    color:#1565C0;
+    font-size:18px;
+    font-family:'Poppins',sans-serif;
+    cursor:pointer;
+    transition:.25s;
+    box-shadow:0 4px 10px rgba(0,0,0,.12);
+}
+
+.receive-btn:hover{
+    background:#BCE8FB;
+    transform:translateY(-2px);
+}
+
+.receive-btn.received{
+    background:#D8FFC9;
+    color:#2E7D32;
+}
+
+@media(max-width:1200px){
+    .dashboard-content{
+        margin-left: 0;
+        padding:40px 28px;
+    }
+
+    .intake-card{
+        padding:28px;
+    }
+}
+
+@media(max-width:768px){
+    .dashboard-layout{
+        margin-left:0;
+        padding:25px 18px;
+    }
+    .page-title{
+        font-size:40px;
+    }
+    .page-subtitle{
+        font-size:18px;
+    }
+    .intake-card{
+        padding:20px;
+        margin-top:30px;
+    }
+    .intake-table{
+        min-width:780px;
+    }
+    .intake-table thead th{
+        font-size:13px;
+    }
+    .intake-table tbody td{
+        font-size:16px;
+        padding:20px 10px;
+    }
+    .receive-btn{
+        min-width:120px;
+        height:42px;
+        font-size:15px;
+    }
+}
+
+@media(max-width:480px){
+    .page-title{
+        font-size:34px;
+    }
+
+    .page-subtitle{
+        font-size:16px;
+    }
+
+    .intake-card{
+        padding:16px;
+    }
+
+    .receive-btn{
+        min-width:110px;
+        font-size:14px;
+        height:40px;
+    }
+}

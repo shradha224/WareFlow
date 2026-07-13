@@ -1,0 +1,137 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Dashboard</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <link rel="stylesheet" href="../../../components/sidebar/sidebar.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside id="sidebar" class="sidebar">
+            <div class="logo-container">
+                <img src="../../../assets/images/logo.png" class="logo" alt="WareFlow Logo">
+            </div>
+        
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active">Dashboard</a>
+                <a href="../warehouse-inventory/warehouse-inventory.html" class="menu-item">Warehouse Inventory</a>
+                <a href="../system-reports/system-reports.html" class="menu-item">System Reports </a>
+                <a href="../request-raw-materials/request-raw-materials.html" class="menu-item">Request Raw Materials</a>
+                <a href="../launch-batch/launch-batch.html" class="menu-item">Launch Batch</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn">
+                    Logout
+                </button>
+            </div>
+        </aside>
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+ 
+        <main class="dashboard-content">
+            <section class="page-header">
+                <div class="header-left">
+                <button id="menu-toggle"> ☰ </button>
+                    <div>
+                        <h1 class="page-title">Supervisor Dashboard</h1>
+                        <p class="page-subtitle">Supervisor dashboard, alerts and demand forecasting</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-grid">
+                <div class="left-column">
+                     <div class="top-cards">
+                        <div class="card stat-card">
+                            <h3>Active alerts</h3>
+                            <div class="stat-number">
+                                1
+                            </div>
+                        </div>
+                        <div class="card stat-card">
+                            <h3>Pending material requests</h3>
+                            <div class="stat-number">
+                                3
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card workload-card">
+                        <h2>Active Component Workload Summary</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Component ID</th>
+                                    <th>Component / Part</th>
+                                    <th>Quantity Consumed</th>
+                                    <th>Staging Location</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>C001</td>
+                                    <td>
+                                        <strong>Microchip MC-90</strong>
+                                        <br>
+                                        <small>MCH-090-003</small>
+                                    </td>
+                                    <td class="blue-text">10 pcs</td>
+                                    <td>Assembly Station</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h2>
+                                Demand Prediction Analysis
+                            </h2>
+                        </div>
+                        <canvas id="demandChart"></canvas>
+                    </div>
+                </div>
+ 
+                <div class="right-column">
+                    <div class="card qc-card">
+                        <h2>Finished Goods Quality Report</h2>
+                        <div class="quality-block">
+                            <p>Passed Quality Check</p>
+                            <div class="quality-circle success">
+                                100%
+                            </div>
+                        </div>
+                        <div class="quality-block">
+                            <p>Failed Quality Check</p>
+                            <div class="quality-circle danger">
+                                0%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card progress-card">
+                        <h2>Batch-wise Progress</h2>
+                        <p class="batch-id">B012</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">50%</div>
+                    </div>
+                    <div class="card alerts-card">
+                        <h2>Alerts</h2>
+                        <div class="alert-box">
+                            <p>Current stock quantity of Material D is low by 250 units.</p>
+                            <button class="place-order-btn">Place Order</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="../../../components/sidebar/sidebar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

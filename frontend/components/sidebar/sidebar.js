@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     const sidebar=document.getElementById("sidebar");
     const overlay=document.getElementById("sidebar-overlay");
     const menu=document.getElementById("menu-toggle");
+    const logout=document.querySelector(".logout-btn");
     if(!sidebar || !menu || !overlay) return;
     menu.addEventListener("click",(e)=>{
         e.stopPropagation();
@@ -11,6 +12,9 @@ document.addEventListener("DOMContentLoaded",()=>{
     overlay.addEventListener("click",()=>{
         sidebar.classList.remove("show");
         overlay.classList.remove("show");
+    });
+    logout.addEventListener("click",()=>{
+        window.location.href="/frontend/pages/login/login.html"
     });
     document.querySelectorAll(".menu-item").forEach(item=>{
         item.addEventListener("click",()=>{
