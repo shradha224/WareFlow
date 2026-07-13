@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         if (userId==="inventory" && password==="1234") {
-            window.location.href ="../inventory-manager/warehouse-inventory/warehouse-inventory.html";
+            window.location.href ="../inventory-manager/warehouse-stock/warehouse-stock.html";
             return;
         }
 
