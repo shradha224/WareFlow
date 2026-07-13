@@ -1,0 +1,109 @@
+"""
+routes/warehouse_stock_control.py
+-----------------------------------
+USED ON: Warehouse Stock Control page.
+
+Endpoints:
+  POST /api/stock/dispatch
+       { component_id, dispatched_qty }
+       -> Reduce warehouse stock and create a Material_Transfers record
+          (transfer_status = 'In Transit'). This is the schema's
+          equivalent of the spec's "FloorHouseInventory record".
+
+  POST /api/inventory/items
+       { part_name, description, min_threshold, warehouse_stock, floor_stock }
+       -> Generate Component ID and create inventory record.
+"""
+
+import uuid
+from flask import Blueprint, request, jsonify
+from auth import login_required, role_required
+from db import get_db_cursor
+
+warehouse_stock_control_bp = Blueprint("warehouse_stock_control", __name__)
+
+
+def _generate_component_id() -> str:
+    return f"COMP-{uuid.uuid4().hex[:8].upper()}"
+
+
+@warehouse_stock_control_bp.route("/api/stock/dispatch", methods=["POST"])
+@login_required
+@role_required("Supervisor", "Inventory Inspector")
+def dispatch_material():
+    data = request.get_json(silent=True) or {}
+    component_id = data.get("component_id")
+    dispatched_qty = data.get("dispatched_qty")
+
+    if not component_id or not dispatched_qty:
+        return jsonify({"error": "component_id and dispatched_qty are required"}), 400
+    if dispatched_qty <= 0:
+        return jsonify({"error": "dispatched_qty must be positive"}), 400
+
+    with get_db_cursor(commit=True) as cur:
+        cur.execute(
+            "SELECT warehouse_stock FROM Components WHERE component_id = %s FOR UPDATE",
+            (component_id,),
+        )
+        row = cur.fetchone()
+        if not row:
+            return jsonify({"error": f"Unknown component_id '{component_id}'"}), 404
+        if row["warehouse_stock"] < dispatched_qty:
+            return jsonify({
+                "error": "Insufficient warehouse stock",
+                "available": row["warehouse_stock"],
+                "requested": dispatched_qty,
+            }), 409
+
+        cur.execute("""
+            UPDATE Components SET warehouse_stock = warehouse_stock - %s
+            WHERE component_id = %s
+        """, (dispatched_qty, component_id))
+
+        cur.execute("""
+            INSERT INTO Material_Transfers (component_id, dispatched_qty, transfer_status)
+            VALUES (%s, %s, 'In Transit')
+        """, (component_id, dispatched_qty))
+        transfer_id = cur.lastrowid
+
+    return jsonify({
+        "message": "Material dispatched",
+        "transfer_id": transfer_id,
+        "component_id": component_id,
+        "dispatched_qty": dispatched_qty,
+        "transfer_status": "In Transit",
+    }), 201
+
+
+@warehouse_stock_control_bp.route("/api/inventory/items", methods=["POST"])
+@login_required
+@role_required("Supervisor", "Inventory Inspector")
+def add_new_item():
+    data = request.get_json(silent=True) or {}
+    part_name = data.get("part_name")
+    description = data.get("description", "")
+    min_threshold = data.get("min_threshold")
+    warehouse_stock = data.get("warehouse_stock", 0)
+    floor_stock = data.get("floor_stock", 0)
+
+    if not part_name or min_threshold is None:
+        return jsonify({"error": "part_name and min_threshold are required"}), 400
+
+    component_id = _generate_component_id()
+
+    with get_db_cursor(commit=True) as cur:
+        cur.execute("""
+            INSERT INTO Components
+                (component_id, part_name, description, warehouse_stock, floor_stock, min_threshold)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (component_id, part_name, description, warehouse_stock, floor_stock, min_threshold))
+
+    return jsonify({
+        "message": "Inventory item created",
+        "component_id": component_id,
+        "part_name": part_name,
+        "description": description,
+        "warehouse_stock": warehouse_stock,
+        "floor_stock": floor_stock,
+        "min_threshold": min_threshold,
+    }), 201
