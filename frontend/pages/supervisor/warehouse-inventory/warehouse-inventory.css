@@ -63,22 +63,22 @@
     text-transform:uppercase;
 }
 
-.stock-ok{
-    background:#E8FFF2;
-    color:#2EAF67;
-    border:1px solid #BEEFD3;
+.status-good{
+    color:#2E7D32;
+    background:#D8FFD8;
+    padding:6px 14px;
+    border-radius:20px;
+    font-weight:600;
+    display:inline-block;
 }
 
-.low-stock{
-    background:#FFF7DD;
-    color:#E39C00;
-    border:1px solid #FFE2A2;
-}
-
-.out-stock{
-    background:#FFE8E8;
-    color:#D32F2F;
-    border:1px solid #FFB5B5;
+.status-low{
+    color:#C62828;
+    background:#FFE1E1;
+    padding:6px 14px;
+    border-radius:20px;
+    font-weight:600;
+    display:inline-block;
 }
 
 .inventory-table tbody tr{

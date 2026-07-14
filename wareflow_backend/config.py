@@ -13,7 +13,7 @@ class Config:
     DB_HOST = os.environ.get("DB_HOST", "localhost")
     DB_PORT = int(os.environ.get("DB_PORT", 3306))
     DB_USER = os.environ.get("DB_USER", "root")
-    DB_PASSWORD = os.environ.get("DB_PASSWORD", "")
+    DB_PASSWORD = os.environ.get("DB_PASSWORD", "MySql@123")
     DB_NAME = os.environ.get("DB_NAME", "wareflow_db")
 
     JWT_SECRET = os.environ.get("JWT_SECRET", "change-this-in-production")

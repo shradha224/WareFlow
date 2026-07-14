@@ -1,72 +1,92 @@
-document.addEventListener("DOMContentLoaded", initializeDashboard);
-
-function initializeDashboard() {
-    initializeChart();
-    registerEvents();
-}
-
-function registerEvents() {
-    const placeOrderBtn = document.querySelector(".place-order-btn");
-    if(placeOrderBtn){
-        placeOrderBtn.addEventListener("click", goToRequestMaterials);
+document.addEventListener("DOMContentLoaded", () => {
+    loadDashboard();
+});
+async function loadDashboard() {
+    try {
+        const data = await apiRequest("/dashboard/supervisor");
+        document.getElementById("active-alert-count").textContent =
+            data.active_alerts.count;
+        document.getElementById("pending-request-count").textContent =
+            data.pending_requests;
+        const pass = data.qc_pass_percentage || 0;
+        document.getElementById("qc-pass").textContent = pass + "%";
+        document.getElementById("qc-fail").textContent = (100-pass) + "%";
+        if(data.batch_progress.length>0){
+            const batch=data.batch_progress[0];
+            document.getElementById("batch-id").textContent=batch.batch_id;
+            document.getElementById("progress-text").textContent=
+                batch.percent_complete+"%";
+            document.getElementById("progress-fill").style.width=
+                batch.percent_complete+"%";
+        }
+        const tbody=document.getElementById("workload-body");
+        tbody.innerHTML="";
+        data.workload_summary.forEach(item=>{
+            tbody.innerHTML+=`
+            <tr>
+                <td>${item.component_id}</td>
+                <td>${item.part_name}</td>
+                <td class="blue-text">
+                    ${item.quantity_consumed}
+                </td>
+                <td>${item.stage_name}</td>
+            </tr>
+            `;
+        });
+        const alerts=document.getElementById("alerts-container");
+        alerts.innerHTML="";
+        data.active_alerts.items.forEach(item=>{
+            alerts.innerHTML+=`
+            <div class="alert-box">
+                <p>
+                ${item.part_name} is below minimum stock.
+                </p>
+                <button
+                    class="place-order-btn"
+                    onclick="placeOrder('${item.component_id}')">
+                    Place Order
+                </button>
+            </div>
+            `;
+        });
+        console.log(data.demand_forecasts);
+        drawChart(data.demand_forecasts);
+    }
+    catch(error){
+        console.error(error);
     }
 }
 
-function goToRequestMaterials(){
-    const material = "Material D";
-    const shortage = 250;
-    localStorage.setItem("requestedMaterial", material);
-    localStorage.setItem("requestedQuantity", shortage);
-    window.location.href =
-    "../request-raw-materials/request-raw-materials.html";
+async function placeOrder(componentId){
+    const qty=prompt("Enter quantity to order");
+    if(!qty) return;
+    try{
+        const response=await apiRequest(
+            "/dashboard/supervisor/place-order",
+            "POST",
+            {
+                component_id:componentId,
+                requested_qty:Number(qty)
+            }
+        );
+        alert(response.message);
+        loadDashboard();
+    }
+    catch(error){
+        alert(error.message);
+    }
 }
 
-function initializeChart(){
-    const ctx =document.getElementById("demandChart");
-    if(!ctx) return;
+function drawChart(forecasts){
+    const ctx=document.getElementById("demandChart");
     new Chart(ctx,{
         type:"bar",
         data:{
-            labels:[
-                "Week 1",
-                "Week 2",
-                "Week 3",
-                "Week 4",
-                "Week 5"
-            ],
-            datasets:[
-                {
-                    label:"Predicted",
-                    data:[75,90,70,105,85],
-                    backgroundColor:"#DCD1FF",
-                    borderColor:"#9A82FF",
-                    borderWidth:2,
-                    borderRadius:6
-                },
-
-                {
-                    label:"Actual",
-                    data:[65,80,60,95,75],
-                    backgroundColor:"#D8F7E5",
-                    borderColor:"#2ECC71",
-                    borderWidth:2,
-                    borderRadius:6
-                }
-            ]
-        },
-        options:{
-            responsive:true,
-            maintainAspectRatio:false,
-            plugins:{
-                legend:{
-                    position:"top"
-                }
-            },
-            scales:{
-                y:{
-                    beginAtZero:true
-                }
-            }
+            labels:forecasts.map(f=>f.part_name),
+            datasets:[{
+                label:"Predicted Demand",
+                data:forecasts.map(f=>f.predicted_demand_qty)
+            }]
         }
     });
 }

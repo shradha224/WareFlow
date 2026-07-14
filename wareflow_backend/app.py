@@ -13,7 +13,7 @@ Wires together:
 Run with:  python app.py   (dev)
            gunicorn -w 4 -b 0.0.0.0:5000 'app:create_app()'   (prod)
 """
-
+from flask_cors import CORS
 from flask import Flask, jsonify, g
 from auth import login_required, role_required
 import background_jobs as jobs
@@ -35,7 +35,7 @@ from routes.quality_check import quality_check_bp
 
 def create_app():
     app = Flask(__name__)
-
+    CORS(app)
     for bp in (
         login_bp,
         supervisor_bp,

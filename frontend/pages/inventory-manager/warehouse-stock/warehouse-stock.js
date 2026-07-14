@@ -17,7 +17,7 @@ function registerEventListeners() {
     }
 }
 function openAddProductPage() {
-    alert("Add Product Page...");
+    window.location.href="../add-product/add-product.html"
 }
 
 function openAddItemPage() {
