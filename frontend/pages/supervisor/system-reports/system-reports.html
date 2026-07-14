@@ -46,23 +46,23 @@
             <section class="metrics-grid">
                 <div class="metric-card">
                     <h3>Avg Assembly Time</h3>
-                    <div class="metric-value">3h</div>
-                    <p class="metric-limit">Target limit:<strong>4.0 hours</strong></p>
+                    <div class="metric-value" id="assembly-time">0h</div>
+                    <p class="metric-limit">Target limit:<strong id="assembly-target">o hours</strong></p>
                 </div>
                 <div class="metric-card">
                     <h3>Avg Production Time</h3>
-                    <div class="metric-value">14.8h</div>
-                    <p class="metric-limit">Target limit:<strong>6.0 hours</strong></p>
+                    <div class="metric-value" id="production-time">0h</div>
+                    <p class="metric-limit" >Target limit:<strong id="production-target">0 hours</strong></p>
                 </div>
                 <div class="metric-card">
                     <h3>Avg QC Inspection Time</h3>
-                    <div class="metric-value">1.9h</div>
-                    <p class="metric-limit">Target limit:<strong>2.0 hours</strong></p>
+                    <div class="metric-value" id="qc-time">0h</div>
+                    <p class="metric-limit">Target limit:<strong id="qc-target">0 hours</strong></p>
                 </div>
 
                 <div class="metric-card">
                     <h3>Production Output</h3>
-                    <div class="metric-value">2</div>
+                    <div class="metric-value" id="production-output">0</div>
                     <span class="status-pill completed">COMPLETED</span>
                 </div>
             </section>
@@ -79,13 +79,7 @@
                                 <th>Delay Status</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>Assembly Stage</td>
-                                <td class="delay-time">18.5 hours</td>
-                                <td>4 hours</td>
-                                <td><span class="delay-pill">DELAYED (+14.5H)</span></td>
-                            </tr>
+                        <tbody id="delay-body">
                         </tbody>
                     </table>
                 </div>
@@ -94,17 +88,20 @@
                     <h2>Raw Materials Quality Report</h2>
                     <div class="quality-block">
                         <p>Passed Quality Check</p>
-                        <div class="quality-circle success">97%</div>
+                        <div class="quality-circle success" id="qc-pass">0%</div>
                     </div>
 
                     <div class="quality-block">
                         <p>Failed Quality Check</p>
-                        <div class="quality-circle danger">3%</div>
+                        <div class="quality-circle danger" id="qc-fail">0%</div>
                     </div>
                 </div>
             </section>
         </main>
     </div>
+    <script src="../../../js/config.js"></script>
+    <script src="../../../js/auth.js"></script>
+    <script src="../../../js/api.js"></script>
     <script src="../../../components/sidebar/sidebar.js"></script>
     <script src="system-reports.js"></script>
 </body>

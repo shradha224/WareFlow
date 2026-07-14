@@ -14,7 +14,18 @@ from auth import login_required
 from db import get_db_cursor
 
 request_raw_material_bp = Blueprint("request_raw_material", __name__)
+@request_raw_material_bp.route("/api/components", methods=["GET"])
+def get_components():
+    with get_db_cursor() as cur:
+        cur.execute("""
+            SELECT component_id, part_name
+            FROM Components
+            ORDER BY part_name
+        """)
 
+        components = cur.fetchall()
+
+    return jsonify({"components": components}), 200
 
 @request_raw_material_bp.route("/api/material-requests", methods=["POST"])
 @login_required
