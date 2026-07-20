@@ -49,7 +49,7 @@ class CustomJSONProvider(DefaultJSONProvider):
 def create_app():
     app = Flask(__name__)
     app.json = CustomJSONProvider(app)
-    CORS(app)
+    CORS(app, origins="*")
     for bp in (
         login_bp,
         auth_extended_bp,
