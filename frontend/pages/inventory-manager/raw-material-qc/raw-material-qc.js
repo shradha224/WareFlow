@@ -1,26 +1,84 @@
-document.addEventListener("DOMContentLoaded", () =>{
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "../../login/login.html";
+        return;
+    }
     initializePage();
 });
 
-function initializePage(){
-    registerEventListeners();
+function initializePage() {
+    loadPendingQC();
 }
 
-function registerEventListeners() {
-    const passButtons= document.querySelectorAll(".pass-btn");
-    const failButtons =document.querySelectorAll(".fail-btn");
-    passButtons.forEach(button=>{
-        button.addEventListener("click",handlePass);
-    });
-    failButtons.forEach(button =>{
-        button.addEventListener("click",handleFail);
-    });
+async function loadPendingQC() {
+    try {
+        const response = await fetch("http://localhost:5000/api/qc/pending", {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to load pending QC items");
+        }
+
+        const tbody = document.querySelector(".qc-table tbody");
+        if (tbody) {
+            tbody.innerHTML = "";
+            const pendingItems = data.pending;
+            if (pendingItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No raw materials pending quality check.</td></tr>';
+            } else {
+                pendingItems.forEach(item => {
+                    const row = document.createElement("tr");
+                    const dateStr = new Date(item.created_at).toLocaleString();
+
+                    row.innerHTML = `
+                        <td>${item.component_id}</td>
+                        <td>${item.part_name}</td>
+                        <td><strong>${item.requested_qty} units</strong></td>
+                        <td>${dateStr}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="pass-btn primary-btn" onclick="submitQC(${item.request_id}, '${item.component_id}', ${item.requested_qty}, 'Pass')">Pass</button>
+                                <button class="fail-btn secondary-btn" onclick="submitQC(${item.request_id}, '${item.component_id}', ${item.requested_qty}, 'Fail')" style="border-color: #C62828; color: #C62828;">Fail</button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Error loading pending QC:", error);
+    }
 }
 
-function handlePass(event) {
-    alert("Component Passed");
-}
+window.submitQC = async function(requestId, componentId, qtyInspected, result) {
+    try {
+        const response = await fetch("http://localhost:5000/api/qc/component", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({
+                component_id: componentId,
+                qty_inspected: qtyInspected,
+                result: result,
+                request_id: requestId
+            })
+        });
 
-function handleFail(event) {
-    alert("Component Failed");
-}
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to submit QC result");
+        }
+
+        alert(`QC Check recorded: ${result}\n\n${data.message}`);
+        initializePage();
+    } catch (error) {
+        alert(error.message);
+    }
+};

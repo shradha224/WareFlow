@@ -1,3 +1,4 @@
+
 """
 background_jobs.py
 --------------------
@@ -78,24 +79,25 @@ def delay_detection():
     flagged = []
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
-            SELECT stage_id, batch_id, stage_name, target_hours, start_timestamp
+            SELECT stage_id, batch_id, stage_name, target_hours, start_timestamp,
+                   TIMESTAMPDIFF(SECOND, start_timestamp, NOW()) / 3600.0 AS elapsed_hours
             FROM Batch_Stages
             WHERE start_timestamp IS NOT NULL AND end_timestamp IS NULL
         """)
         in_progress_stages = cur.fetchall()
 
-        now = datetime.datetime.utcnow()
         for stage in in_progress_stages:
-            elapsed_hours = (now - stage["start_timestamp"]).total_seconds() / 3600.0
-            is_delayed = elapsed_hours > float(stage["target_hours"])
+            elapsed_hours = max(0.0, float(stage["elapsed_hours"]))
+            target_hours = float(stage["target_hours"] or 0.0)
+            delay_hours = max(0.0, elapsed_hours - target_hours)
 
             cur.execute("""
                 UPDATE Batch_Stages
-                SET elapsed_hours = %s, is_delayed = %s
+                SET actual_hours = %s, delayed_by = %s
                 WHERE stage_id = %s
-            """, (round(elapsed_hours, 2), is_delayed, stage["stage_id"]))
+            """, (round(elapsed_hours, 2), delay_hours, stage["stage_id"]))
 
-            if is_delayed:
+            if delay_hours > 0.0:
                 flagged.append({
                     "stage_id": stage["stage_id"],
                     "batch_id": stage["batch_id"],
@@ -118,9 +120,10 @@ def batch_completion():
     completed_batches = []
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
-            SELECT batch_id, product_name, target_qty, completed_qty
-            FROM Production_Batches
-            WHERE completed_qty >= target_qty AND status != 'Complete'
+            SELECT pb.batch_id, p.product_name, pb.target_qty, pb.completed_qty
+            FROM Production_Batches pb
+            JOIN Products p ON pb.product_id = p.product_id
+            WHERE pb.completed_qty >= pb.target_qty AND pb.status != 'Complete'
         """)
         candidates = cur.fetchall()
 
@@ -150,22 +153,29 @@ def finished_good_generation():
     generated = []
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
-            SELECT pb.batch_id, pb.product_name
+            SELECT pb.batch_id, p.product_name, pb.product_id
             FROM Production_Batches pb
+            JOIN Products p ON pb.product_id = p.product_id
             LEFT JOIN Finished_Goods fg ON fg.batch_id = pb.batch_id
             WHERE pb.status = 'Complete' AND fg.finished_good_id IS NULL
         """)
         batches_needing_fg = cur.fetchall()
 
         for batch in batches_needing_fg:
+            batch_id = batch["batch_id"]
+            
+            from completion_helper import is_batch_production_complete
+            if not is_batch_production_complete(cur, batch_id):
+                continue
+
             finished_good_id = _generate_finished_good_id()
             cur.execute("""
-                INSERT INTO Finished_Goods (finished_good_id, batch_id, qc_status)
-                VALUES (%s, %s, 'Pending QC')
-            """, (finished_good_id, batch["batch_id"]))
+                INSERT INTO Finished_Goods (finished_good_id, batch_id, product_id, qc_status)
+                VALUES (%s, %s, %s, 'Pending QC')
+            """, (finished_good_id, batch_id, batch["product_id"]))
             generated.append({
                 "finished_good_id": finished_good_id,
-                "batch_id": batch["batch_id"],
+                "batch_id": batch_id,
                 "product_name": batch["product_name"],
                 "qc_status": "Pending QC",
             })
@@ -176,7 +186,7 @@ def finished_good_generation():
 # ---------------------------------------------------------------------------
 # 5. Demand Prediction
 # ---------------------------------------------------------------------------
-def demand_prediction(lookback_days: int = 30, forecast_days: int = 30):
+def demand_prediction(lookback_days: int = 30, forecast_days: int = 7):
     """
     For each component, looks at consumption over the trailing
     `lookback_days` and projects a simple forecast (average daily usage *
@@ -186,39 +196,69 @@ def demand_prediction(lookback_days: int = 30, forecast_days: int = 30):
     """
     forecasts = []
     with get_db_cursor(commit=True) as cur:
+        # Clear old predictions
+        cur.execute("DELETE FROM demand_predictions")
+
         cur.execute("""
-            SELECT component_id, DATE(consumed_at) AS usage_date, SUM(qty_used) AS daily_qty
-            FROM Component_Consumption
-            WHERE consumed_at >= (CURRENT_DATE - INTERVAL %s DAY)
-            GROUP BY component_id, DATE(consumed_at)
+            SELECT pb.product_id, DATE(fg.generation_date) AS completion_date, SUM(pb.completed_qty) AS daily_qty
+            FROM Finished_Goods fg
+            JOIN Production_Batches pb ON fg.batch_id = pb.batch_id
+            WHERE fg.generation_date >= (CURRENT_DATE - INTERVAL %s DAY)
+            GROUP BY pb.product_id, DATE(fg.generation_date)
         """, (lookback_days,))
         rows = cur.fetchall()
 
-        usage_by_component = {}
+        usage_by_product = {}
         for row in rows:
-            usage_by_component.setdefault(row["component_id"], []).append(row["daily_qty"])
+            usage_by_product.setdefault(row["product_id"], []).append(row["daily_qty"])
+
+        # Fetch all products to ensure every product gets predicted
+        cur.execute("SELECT product_id FROM Products")
+        all_products = [p["product_id"] for p in cur.fetchall()]
 
         today = datetime.date.today()
         period_end = today + datetime.timedelta(days=forecast_days)
 
-        for component_id, daily_quantities in usage_by_component.items():
-            avg_daily_usage = statistics.mean(daily_quantities)
-            predicted_demand_qty = round(avg_daily_usage * forecast_days)
+        for product_id in all_products:
+            if product_id in usage_by_product:
+                daily_quantities = usage_by_product[product_id]
+                avg_daily_usage = statistics.mean(daily_quantities) if daily_quantities else 0.0
+                predicted_demand_qty = round(avg_daily_usage * forecast_days)
+            else:
+                # Use fallback heuristic: BOM total * 10
+                cur.execute("""
+                    SELECT COALESCE(SUM(quantity_required), 0) AS total_bom
+                    FROM junction_of_materials
+                    WHERE product_id = %s
+                """, (product_id,))
+                total_bom = cur.fetchone()["total_bom"] or 0
+                predicted_demand_qty = int(total_bom * 10)
 
             cur.execute("""
-                INSERT INTO Demand_Forecasts
-                    (component_id, predicted_demand_qty, forecast_period_start, forecast_period_end)
+                INSERT INTO demand_predictions
+                    (product_id, predicted_demand_qty, forecast_period_start, forecast_period_end)
                 VALUES (%s, %s, %s, %s)
-            """, (component_id, predicted_demand_qty, today, period_end))
+            """, (product_id, predicted_demand_qty, today, period_end))
 
             forecasts.append({
-                "component_id": component_id,
+                "product_id": product_id,
                 "predicted_demand_qty": predicted_demand_qty,
                 "forecast_period_start": str(today),
                 "forecast_period_end": str(period_end),
             })
 
     return {"forecasts": forecasts}
+
+
+def cleanup_expired_otps():
+    """
+    Background job to delete expired OTP records from Email_Verification table.
+    """
+    deleted_count = 0
+    with get_db_cursor(commit=True) as cur:
+        cur.execute("DELETE FROM Email_Verification WHERE expiry_time < NOW()")
+        deleted_count = cur.rowcount
+    return {"deleted_expired_otps_count": deleted_count}
 
 
 # ---------------------------------------------------------------------------
@@ -230,7 +270,9 @@ JOB_REGISTRY = {
     "batch_completion": batch_completion,
     "finished_good_generation": finished_good_generation,
     "demand_prediction": demand_prediction,
+    "cleanup_expired_otps": cleanup_expired_otps,
 }
+
 
 
 def run_all_jobs():

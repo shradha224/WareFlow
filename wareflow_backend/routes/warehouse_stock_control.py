@@ -107,3 +107,89 @@ def add_new_item():
         "floor_stock": floor_stock,
         "min_threshold": min_threshold,
     }), 201
+
+
+@warehouse_stock_control_bp.route("/api/batches/<batch_id>/dispatch", methods=["POST"])
+@login_required
+@role_required("Supervisor", "Inventory Inspector")
+def dispatch_batch_materials(batch_id):
+    with get_db_cursor(commit=True) as cur:
+        cur.execute("SELECT pb.*, p.product_name FROM Production_Batches pb JOIN Products p ON pb.product_id = p.product_id WHERE pb.batch_id = %s FOR UPDATE", (batch_id,))
+        batch = cur.fetchone()
+        if not batch:
+            return jsonify({"error": f"Unknown batch '{batch_id}'"}), 404
+        if batch["status"] in ("Complete", "Completed"):
+            return jsonify({"error": "Cannot dispatch materials for a completed batch"}), 400
+
+        cur.execute("SELECT component_id, quantity_required FROM junction_of_materials WHERE product_id = %s", (batch["product_id"],))
+        bom = cur.fetchall()
+        if not bom:
+            return jsonify({"error": f"No component mapping found for product {batch['product_name']}"}), 400
+
+        components_to_dispatch = []
+        for item in bom:
+            req_qty = item["quantity_required"] * batch["target_qty"]
+            
+            # Check already transferred
+            cur.execute("""
+                SELECT SUM(dispatched_qty) AS dispatched 
+                FROM Material_Transfers 
+                WHERE batch_id = %s AND component_id = %s
+            """, (batch_id, item["component_id"]))
+            transferred = cur.fetchone()["dispatched"] or 0
+            
+            # Check pending requests
+            cur.execute("""
+                SELECT SUM(requested_qty) AS requested 
+                FROM Material_Requests 
+                WHERE batch_id = %s AND component_id = %s AND status = 'Pending'
+            """, (batch_id, item["component_id"]))
+            requested = cur.fetchone()["requested"] or 0
+            
+            to_dispatch = req_qty - (transferred + requested)
+            if to_dispatch <= 0:
+                # Already fully covered
+                continue
+                
+            cur.execute("SELECT warehouse_stock, part_name FROM Components WHERE component_id = %s FOR UPDATE", (item["component_id"],))
+            comp = cur.fetchone()
+            if not comp:
+                return jsonify({"error": f"Unknown component '{item['component_id']}'"}), 404
+            if comp["warehouse_stock"] < to_dispatch:
+                return jsonify({
+                    "error": f"Insufficient stock for component '{comp['part_name']} ({item['component_id']})': required {to_dispatch}, available {comp['warehouse_stock']}"
+                }), 409
+                
+            components_to_dispatch.append({
+                "component_id": item["component_id"],
+                "qty": to_dispatch
+            })
+
+        if not components_to_dispatch:
+            return jsonify({"error": "Materials already fully dispatched for this batch"}), 409
+
+        transfers = []
+        for item in components_to_dispatch:
+            cur.execute("""
+                UPDATE Components SET warehouse_stock = warehouse_stock - %s
+                WHERE component_id = %s
+            """, (item["qty"], item["component_id"]))
+
+            cur.execute("""
+                INSERT INTO Material_Transfers (component_id, dispatched_qty, transfer_status, batch_id)
+                VALUES (%s, %s, 'In Transit', %s)
+            """, (item["component_id"], item["qty"], batch_id))
+            transfers.append({
+                "transfer_id": cur.lastrowid,
+                "component_id": item["component_id"],
+                "dispatched_qty": item["qty"],
+                "transfer_status": "In Transit"
+            })
+
+        cur.execute("UPDATE Production_Batches SET status = 'Dispatched' WHERE batch_id = %s", (batch_id,))
+
+    return jsonify({
+        "message": f"Materials successfully dispatched for batch {batch_id}",
+        "batch_id": batch_id,
+        "transfers": transfers
+    }), 201

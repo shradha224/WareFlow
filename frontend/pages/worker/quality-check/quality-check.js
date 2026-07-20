@@ -1,0 +1,158 @@
+let selectedStatus = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "../../login/login.html";
+        return;
+    }
+    initializePage();
+});
+
+function initializePage() {
+    replaceInputWithSelect();
+    loadPendingQCBatches();
+    registerEventListeners();
+}
+
+function replaceInputWithSelect() {
+    const input = document.getElementById("productId");
+    if (input && input.tagName === "INPUT") {
+        const select = document.createElement("select");
+        select.id = "productId";
+        select.className = input.className;
+        input.parentNode.replaceChild(select, input);
+        
+        select.addEventListener("change", () => {
+            const selectedOpt = select.options[select.selectedIndex];
+            const pName = selectedOpt ? selectedOpt.dataset.productName || "" : "";
+            const bId = selectedOpt ? selectedOpt.dataset.batchId || "" : "";
+            
+            const displayBatch = document.getElementById("display-batch-id");
+            if (displayBatch) displayBatch.textContent = bId || "--";
+            
+            const displayProduct = document.getElementById("display-product-name");
+            if (displayProduct) displayProduct.textContent = pName || "--";
+        });
+
+        // Add container div for batch ID and product name below select
+        const container = select.parentNode;
+        
+        const batchDiv = document.createElement("div");
+        batchDiv.className = "form-group";
+        batchDiv.style.marginTop = "15px";
+        batchDiv.innerHTML = `
+            <label>Batch ID</label>
+            <div id="display-batch-id" style="padding: 10px; border: 1px solid var(--border-color, #ccc); border-radius: 6px; background-color: var(--card-bg, #f9f9f9);">--</div>
+        `;
+        container.appendChild(batchDiv);
+
+        const nameDiv = document.createElement("div");
+        nameDiv.className = "form-group";
+        nameDiv.style.marginTop = "15px";
+        nameDiv.innerHTML = `
+            <label>Product Name</label>
+            <div id="display-product-name" style="padding: 10px; border: 1px solid var(--border-color, #ccc); border-radius: 6px; background-color: var(--card-bg, #f9f9f9);">--</div>
+        `;
+        container.appendChild(nameDiv);
+    }
+}
+
+async function loadPendingQCBatches() {
+    const select = document.getElementById("productId");
+    if (!select) return;
+    select.innerHTML = '<option value="">Select Product ID</option>';
+    try {
+        const response = await fetch("http://localhost:5000/api/qc/pending-batches", {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to load pending batches");
+        }
+        data.batches.forEach(b => {
+            const option = document.createElement("option");
+            option.value = b.finished_good_id;
+            option.textContent = b.finished_good_id;
+            option.dataset.batchId = b.batch_id;
+            option.dataset.productName = b.product_name;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error loading pending batches:", error);
+    }
+}
+
+function registerEventListeners() {
+    const failBtn = document.querySelector(".fail-btn");
+    const passBtn = document.querySelector(".pass-btn");
+    const form = document.getElementById("qualityForm");
+
+    if (failBtn) {
+        failBtn.addEventListener("click", () => selectStatus("Fail", failBtn));
+    }
+    if (passBtn) {
+        passBtn.addEventListener("click", () => selectStatus("Pass", passBtn));
+    }
+    if (form) {
+        form.addEventListener("submit", submitQCResult);
+    }
+}
+
+function selectStatus(status, btnElement) {
+    selectedStatus = status;
+    document.querySelectorAll(".status-btn").forEach(btn => btn.classList.remove("active"));
+    btnElement.classList.add("active");
+}
+
+async function submitQCResult(event) {
+    event.preventDefault();
+
+    const productId = document.getElementById("productId").value.trim();
+
+    if (!productId) {
+        alert("Please select a Product ID");
+        return;
+    }
+
+    if (!selectedStatus) {
+        alert("Please select Pass or Fail");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5000/api/qc/finished-good", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({
+                productId: productId,
+                result: selectedStatus
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to submit QC result");
+        }
+
+        alert(`QC Result Recorded!\n\nID: ${productId}\nStatus: ${selectedStatus}`);
+        document.getElementById("productId").value = "";
+        
+        const displayBatch = document.getElementById("display-batch-id");
+        if (displayBatch) displayBatch.textContent = "--";
+        
+        const displayProduct = document.getElementById("display-product-name");
+        if (displayProduct) displayProduct.textContent = "--";
+
+        selectedStatus = null;
+        document.querySelectorAll(".status-btn").forEach(btn => btn.classList.remove("active"));
+        initializePage();
+    } catch (error) {
+        alert(error.message);
+    }
+}

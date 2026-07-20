@@ -63,10 +63,11 @@ def authenticate_user(user_id: str, password: str):
     """
     with get_db_cursor() as cur:
         cur.execute(
-            "SELECT user_id, password, user_role FROM Users WHERE user_id = %s",
+            "SELECT user_id, password, user_role FROM users WHERE user_id = %s",
             (user_id,),
         )
         user = cur.fetchone()
+        print("User fetched:", user)
 
     if not user or not verify_password(password, user["password"]):
         return False, {"error": "Invalid username or password"}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WareFlow | Email Verification</title>
+    <link rel="stylesheet" href="../../styles/global.css">
+    <link rel="stylesheet" href="../login/login.css">
+    <link rel="stylesheet" href="email-verification.css">
+</head>
+<body>
+    <div class="background-overlay"></div>
+    <main class="login-container">
+        <section class="login-card verification-card">
+            <div class="logo-container">
+                <img src="../../assets/images/logo-dark.png" alt="WareFlow Logo" class="logo">
+            </div>
+            <h1 class="login-title">Verify Email</h1>
+            <p class="login-subtitle">We have sent a 6-digit verification code to your email.</p>
+            <form id="verifyForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="email" readonly required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="otp">6-Digit Verification Code</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="otp" placeholder="e.g. 123456" maxlength="6" pattern="\d{6}" required autocomplete="off" style="letter-spacing: 5px; font-weight: bold; font-size: 24px; text-align: center;">
+                    </div>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    Verify Account
+                </button>
+                
+                <div class="resend-wrapper">
+                    <button type="button" id="resendBtn" class="resend-btn">
+                        Resend Code
+                    </button>
+                    <div id="countdown" class="countdown-timer"></div>
+                </div>
+                
+                <div class="register-link-container">
+                    <a href="../login/login.html" class="register-link">Back to Login</a>
+                </div>
+            </form>
+        </section>
+    </main>
+    <script src="../../js/config.js"></script>
+    <script src="../../js/api.js"></script>
+    <script src="email-verification.js"></script>
+</body>
+</html>

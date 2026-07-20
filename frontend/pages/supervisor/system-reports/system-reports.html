@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +14,7 @@
     <div class="dashboard-layout">
         <aside id="sidebar" class="sidebar">
             <div class="logo-container">
-                <img src="../../../assets/images/logo.png" class="logo"alt="WareFlow Logo">
+                <img src="../../../assets/images/logo.png" class="logo" alt="WareFlow Logo">
             </div>
 
             <nav class="sidebar-menu">
@@ -33,11 +34,11 @@
         <main class="dashboard-content">
             <section class="page-header">
                 <div class="header-left">
-                <button id="menu-toggle"> ☰ </button>
-                <div>
-                    <h1 class="page-title">Operations Analytics & Reports</h1>
-                    <p class="page-subtitle">Examine active floor delays and average stage execution statistics.</p>
-                </div>
+                    <button id="menu-toggle"> ☰ </button>
+                    <div>
+                        <h1 class="page-title">Operations Analytics & Reports</h1>
+                        <p class="page-subtitle">Examine active floor delays and average stage execution statistics.</p>
+                    </div>
             </section>
 
             <section class="metrics-heading">
@@ -45,19 +46,19 @@
             </section>
             <section class="metrics-grid">
                 <div class="metric-card">
-                    <h3>Avg Assembly Time</h3>
+                    <h3>Average Batch Completion</h3>
                     <div class="metric-value" id="assembly-time">0h</div>
-                    <p class="metric-limit">Target limit:<strong id="assembly-target">o hours</strong></p>
+
                 </div>
                 <div class="metric-card">
-                    <h3>Avg Production Time</h3>
+                    <h3>Average Stage Transition</h3>
                     <div class="metric-value" id="production-time">0h</div>
-                    <p class="metric-limit" >Target limit:<strong id="production-target">0 hours</strong></p>
+
                 </div>
                 <div class="metric-card">
-                    <h3>Avg QC Inspection Time</h3>
+                    <h3>Average Final QC</h3>
                     <div class="metric-value" id="qc-time">0h</div>
-                    <p class="metric-limit">Target limit:<strong id="qc-target">0 hours</strong></p>
+
                 </div>
 
                 <div class="metric-card">
@@ -105,4 +106,5 @@
     <script src="../../../components/sidebar/sidebar.js"></script>
     <script src="system-reports.js"></script>
 </body>
+
 </html>

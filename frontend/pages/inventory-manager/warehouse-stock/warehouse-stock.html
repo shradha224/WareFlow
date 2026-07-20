@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,74 +11,68 @@
 </head>
 
 <body>
-<div class="container">
-    <aside id="sidebar" class="sidebar">
-        <div class="logo-container">
-            <img src="../../../assets/images/logo.png" class="logo" alt="WareFlow Logo">
-        </div>
-        
-        <nav class="sidebar-menu">
-            <a href="#" class="menu-item active"> Warehouse Stock </a>
-            <a href="../raw-material-qc/raw-material-qc.html" class="menu-item"> QC Check</a>
-            <a href="../pending-requests/pending-requests.html" class="menu-item"> Pending Requests </a>
-        </nav>
+    <div class="container">
+        <aside id="sidebar" class="sidebar">
+            <div class="logo-container">
+                <img src="../../../assets/images/logo.png" class="logo" alt="WareFlow Logo">
+            </div>
 
-        <div class="sidebar-footer">
-            <button class="logout-btn">
-                Logout
-            </button>
-        </div>
-    </aside>
-    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active"> Warehouse Stock </a>
+                <a href="../raw-material-qc/raw-material-qc.html" class="menu-item"> QC Check</a>
+                <a href="../pending-requests/pending-requests.html" class="menu-item"> Pending Requests </a>
+            </nav>
 
-    <main class="content">
-        <header class="page-header">
-            <div class="header-left">
-                <button id="menu-toggle"> ☰ </button>
-                <div>
-                    <h1 class="page-title">Warehouse Stock Control</h1>
-                    <p class="page-subtitle">Manage warehouse inventory and monitor stock levels.</p>
+            <div class="sidebar-footer">
+                <button class="logout-btn">
+                    Logout
+                </button>
+            </div>
+        </aside>
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+        <main class="content">
+            <header class="page-header">
+                <div class="header-left">
+                    <button id="menu-toggle"> ☰ </button>
+                    <div>
+                        <h1 class="page-title">Warehouse Stock Control</h1>
+                        <p class="page-subtitle">Manage warehouse inventory and monitor stock levels.</p>
+                    </div>
                 </div>
-            </div>
-            <div class="header-right">
-                <button id="add-product-btn" class="secondary-btn"> + Add Product </button>
-                <button id="add-item-btn" class="primary-btn"> + Add Item </button>
-            </div>
-        </header>
+                <div class="header-right">
+                    <button id="add-product-btn" class="secondary-btn"> + Add Product </button>
+                    <button id="add-item-btn" class="primary-btn"> + Add Item </button>
+                </div>
+            </header>
 
-        <section class="card inventory-card">
-            <div class="card-title">
-                <h2>Current Inventory Levels</h2>
-            </div>
+            <section class="card inventory-card">
+                <div class="card-title">
+                    <h2>Current Inventory Levels</h2>
+                </div>
 
-            <div class="table-wrapper">
-                <table class="table inventory-table">
-                    <thead>
-                        <tr>
-                            <th>Component ID</th>
-                            <th>Component Name</th>
-                            <th>Current Stock</th>
-                            <th>Threshold</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
+                <div class="table-wrapper">
+                    <table class="table inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Component ID</th>
+                                <th>Component Name</th>
+                                <th>Current Stock</th>
+                                <th>Threshold</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
 
-                    <tbody>
-                        <tr>
-                            <td>C001</td>
-                            <td>Steel Plate</td>
-                            <td>120</td>
-                            <td>50</td>
-                            <td> <span class="status normal">Normal</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
 
-</div>
-<script src="../../../components/sidebar/sidebar.js"></script>
-<script src="warehouse-stock.js"></script>
+    </div>
+    <script src="../../../components/sidebar/sidebar.js"></script>
+    <script src="warehouse-stock.js"></script>
 </body>
+
 </html>

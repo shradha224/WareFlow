@@ -13,8 +13,21 @@ document.addEventListener("DOMContentLoaded",()=>{
         sidebar.classList.remove("show");
         overlay.classList.remove("show");
     });
-    logout.addEventListener("click",()=>{
-        window.location.href="/frontend/pages/login/login.html"
+    logout.addEventListener("click",()=>{  
+        localStorage.clear();
+        sessionStorage.clear();
+        let path = window.location.pathname;
+        let index = path.indexOf("/frontend/");
+        if (index !== -1) {
+            window.location.href = path.substring(0, index) + "/frontend/pages/login/login.html";
+        } else {
+            let pagesIndex = path.indexOf("/pages/");
+            if (pagesIndex !== -1) {
+                window.location.href = path.substring(0, pagesIndex) + "/pages/login/login.html";
+            } else {
+                window.location.href = "/pages/login/login.html";
+            }
+        }
     });
     document.querySelectorAll(".menu-item").forEach(item=>{
         item.addEventListener("click",()=>{

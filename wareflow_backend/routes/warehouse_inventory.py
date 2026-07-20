@@ -17,7 +17,7 @@ warehouse_inventory_bp = Blueprint("warehouse_inventory", __name__)
 
 
 @warehouse_inventory_bp.route("/api/inventory", methods=["GET"])
-#@login_required
+@login_required
 def get_inventory():
     with get_db_cursor() as cur:
         cur.execute("""

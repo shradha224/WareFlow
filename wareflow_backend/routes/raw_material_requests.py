@@ -24,6 +24,20 @@ VALID_ACTIONS = {
 }
 
 
+@raw_material_requests_bp.route("/api/material-requests", methods=["GET"])
+@login_required
+def get_material_requests():
+    with get_db_cursor() as cur:
+        cur.execute("""
+            SELECT mr.request_id, mr.component_id, c.part_name, mr.requested_qty, mr.status, mr.created_at, mr.batch_id
+            FROM Material_Requests mr
+            JOIN Components c ON mr.component_id = c.component_id
+            ORDER BY mr.created_at DESC
+        """)
+        requests = cur.fetchall()
+    return jsonify({"requests": requests}), 200
+
+
 @raw_material_requests_bp.route("/api/material-requests/<int:request_id>", methods=["PATCH"])
 @login_required
 @role_required("Supervisor", "Inventory Inspector")
@@ -45,27 +59,8 @@ def update_material_request(request_id):
             UPDATE Material_Requests SET status = %s WHERE request_id = %s
         """, (new_status, request_id))
 
-        transfer_id = None
-        if action == "fulfil":
-            # Moves the request into the Raw Material QC pipeline
-            cur.execute("""
-                INSERT INTO Material_Transfers (component_id, dispatched_qty, transfer_status)
-                VALUES (%s, %s, 'In Transit')
-            """, (req["component_id"], req["requested_qty"]))
-            transfer_id = cur.lastrowid
-
-            cur.execute("""
-                UPDATE Components SET warehouse_stock = warehouse_stock - %s
-                WHERE component_id = %s
-            """, (req["requested_qty"], req["component_id"]))
-
-    response = {
+    return jsonify({
         "message": f"Material request {request_id} {new_status.lower()}",
         "request_id": request_id,
         "status": new_status,
-    }
-    if transfer_id:
-        response["transfer_id"] = transfer_id
-        response["moved_to"] = "Raw Material QC"
-
-    return jsonify(response), 200
+    }), 200

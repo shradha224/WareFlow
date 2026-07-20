@@ -19,53 +19,121 @@ quality_check_bp = Blueprint("quality_check", __name__)
 
 @quality_check_bp.route("/api/qc/finished-good", methods=["POST"])
 @login_required
-@role_required("Inventory Inspector", "Supervisor")
+@role_required("Inventory Inspector", "Supervisor", "Worker")
 def record_finished_good_qc():
     data = request.get_json(silent=True) or {}
     batch_id = data.get("batch_id")
     finished_good_id = data.get("finished_good_id")
+    product_id_input = data.get("productId") or data.get("product_id")
     qty_inspected = data.get("qty_inspected")
     result = data.get("result")
 
-    if not batch_id or not qty_inspected or result not in ("Pass", "Fail"):
-        return jsonify({"error": "batch_id, qty_inspected, and result ('Pass'/'Fail') are required"}), 400
+    # Normalize result
+    if result:
+        result = result.title()  # e.g., 'PASS' -> 'Pass', 'FAIL' -> 'Fail'
+
+    if result not in ("Pass", "Fail"):
+        return jsonify({"error": "result must be 'Pass' or 'Fail'"}), 400
+
+    target_id = batch_id or finished_good_id or product_id_input
+    if not target_id:
+        return jsonify({"error": "An ID (batch_id, finished_good_id, or product_id) is required"}), 400
 
     with get_db_cursor(commit=True) as cur:
-        cur.execute("SELECT batch_id FROM Production_Batches WHERE batch_id = %s", (batch_id,))
-        if not cur.fetchone():
-            return jsonify({"error": f"Unknown batch_id '{batch_id}'"}), 404
+        # 1. Resolve batch_id and finished_good_id
+        resolved_batch_id = None
+        resolved_finished_good_id = None
 
+        # Check if target_id matches a Finished_Goods record
+        cur.execute("SELECT finished_good_id, batch_id FROM Finished_Goods WHERE finished_good_id = %s", (target_id,))
+        fg_row = cur.fetchone()
+        if fg_row:
+            resolved_finished_good_id = fg_row["finished_good_id"]
+            resolved_batch_id = fg_row["batch_id"]
+        else:
+            # Check if it matches a production batch
+            cur.execute("SELECT batch_id FROM Production_Batches WHERE batch_id = %s", (target_id,))
+            pb_row = cur.fetchone()
+            if pb_row:
+                resolved_batch_id = pb_row["batch_id"]
+                # See if there's an associated finished good
+                cur.execute("SELECT finished_good_id FROM Finished_Goods WHERE batch_id = %s", (resolved_batch_id,))
+                fg_assoc = cur.fetchone()
+                if fg_assoc:
+                    resolved_finished_good_id = fg_assoc["finished_good_id"]
+            else:
+                return jsonify({"error": f"ID '{target_id}' could not be matched to any batch or finished good"}), 404
+
+        # If qty_inspected not passed, default to completed_qty of the batch
+        if not qty_inspected:
+            cur.execute("SELECT completed_qty, target_qty FROM Production_Batches WHERE batch_id = %s", (resolved_batch_id,))
+            batch_row = cur.fetchone()
+            if batch_row:
+                qty_inspected = batch_row["completed_qty"] or batch_row["target_qty"] or 1
+            else:
+                qty_inspected = 1
+
+        # 2. Record inspection
         cur.execute("""
-            INSERT INTO Quality_Inspections (batch_id, qty_inspected, result)
-            VALUES (%s, %s, %s)
-        """, (batch_id, qty_inspected, result))
+            INSERT INTO Quality_Check (inspection_type, finished_good_id, batch_id, qty_checked, result)
+            VALUES ('Finished Good', %s, %s, %s, %s)
+        """, (resolved_finished_good_id, resolved_batch_id, qty_inspected, result))
         inspection_id = cur.lastrowid
 
+        # 3. Update Finished Goods status if one exists
         updated_finished_good = None
-        if finished_good_id:
-            cur.execute("SELECT finished_good_id FROM Finished_Goods WHERE finished_good_id = %s", (finished_good_id,))
-            if cur.fetchone():
-                new_qc_status = "Passed" if result == "Pass" else "Failed"
+        if resolved_finished_good_id:
+            new_qc_status = "Passed" if result == "Pass" else "Failed"
+            cur.execute("""
+                UPDATE Finished_Goods SET qc_status = %s WHERE finished_good_id = %s
+            """, (new_qc_status, resolved_finished_good_id))
+            updated_finished_good = {"finished_good_id": resolved_finished_good_id, "qc_status": new_qc_status}
+
+            # Update final QC stage in Batch_Stages
+            cur.execute("""
+                SELECT stage_id FROM Batch_Stages
+                WHERE batch_id = %s
+                ORDER BY stage_id DESC LIMIT 1
+            """, (resolved_batch_id,))
+            final_stage_row = cur.fetchone()
+            if final_stage_row:
                 cur.execute("""
-                    UPDATE Finished_Goods SET qc_status = %s WHERE finished_good_id = %s
-                """, (new_qc_status, finished_good_id))
-                updated_finished_good = {"finished_good_id": finished_good_id, "qc_status": new_qc_status}
+                    UPDATE Batch_Stages
+                    SET status = 'Complete', end_timestamp = CURRENT_TIMESTAMP,
+                        actual_hours = TIMESTAMPDIFF(MINUTE, COALESCE(start_timestamp, CURRENT_TIMESTAMP), CURRENT_TIMESTAMP) / 60
+                    WHERE stage_id = %s
+                """, (final_stage_row["stage_id"],))
 
         # Refresh dashboard-facing quality counts for this batch
         cur.execute("""
             SELECT
                 SUM(CASE WHEN result = 'Pass' THEN 1 ELSE 0 END) AS passed_count,
                 SUM(CASE WHEN result = 'Fail' THEN 1 ELSE 0 END) AS failed_count
-            FROM Quality_Inspections
-            WHERE batch_id = %s
-        """, (batch_id,))
+            FROM Quality_Check
+            WHERE batch_id = %s AND inspection_type = 'Finished Good'
+        """, (resolved_batch_id,))
         quality_counts = cur.fetchone()
 
     return jsonify({
         "message": "Quality check recorded",
         "inspection_id": inspection_id,
-        "batch_id": batch_id,
+        "batch_id": resolved_batch_id,
         "result": result,
         "finished_good": updated_finished_good,
         "quality_counts": quality_counts,
     }), 201
+
+
+@quality_check_bp.route("/api/qc/pending-batches", methods=["GET"])
+@login_required
+def get_pending_qc_batches():
+    with get_db_cursor() as cur:
+        cur.execute("""
+            SELECT fg.finished_good_id, fg.batch_id, p.product_name
+            FROM Finished_Goods fg
+            JOIN Products p ON fg.product_id = p.product_id
+            WHERE fg.qc_status = 'Pending QC'
+            ORDER BY fg.generation_date DESC
+        """)
+        batches = cur.fetchall()
+    return jsonify({"batches": batches}), 200

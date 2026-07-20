@@ -16,6 +16,21 @@ from db import get_db_cursor
 floor_material_intake_bp = Blueprint("floor_material_intake", __name__)
 
 
+@floor_material_intake_bp.route("/api/transfers", methods=["GET"])
+@login_required
+def get_transfers():
+    with get_db_cursor() as cur:
+        cur.execute("""
+            SELECT t.transfer_id, t.component_id, c.part_name, t.dispatched_qty, t.transfer_status, t.dispatched_at, t.batch_id
+            FROM Material_Transfers t
+            JOIN Components c ON t.component_id = c.component_id
+            WHERE t.transfer_status = 'In Transit'
+            ORDER BY t.dispatched_at DESC
+        """)
+        transfers = cur.fetchall()
+    return jsonify({"transfers": transfers}), 200
+
+
 @floor_material_intake_bp.route("/api/transfers/<int:transfer_id>/verify", methods=["PATCH"])
 @login_required
 @role_required("Worker", "Inventory Inspector")

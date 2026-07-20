@@ -5,77 +5,56 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadReports() {
     try {
         const data = await apiRequest("/reports");
-        const stages = {};
-        data.stage_metrics.forEach(stage => {
-            stages[stage.stage_name.toLowerCase()] = stage;
+        const batchCompletion = data.average_batch_completion_hours !== undefined ? data.average_batch_completion_hours : 0;
+        const stageTransition = data.average_stage_transition_hours !== undefined ? data.average_stage_transition_hours : 0;
+        const finalQc = data.average_final_qc_hours !== undefined ? data.average_final_qc_hours : 0;
+
+        document.getElementById("assembly-time").textContent =
+            Number(batchCompletion).toFixed(2) + " h";
+
+        document.getElementById("production-time").textContent =
+            Number(stageTransition).toFixed(2) + " h";
+
+        document.getElementById("qc-time").textContent =
+            Number(finalQc).toFixed(2) + " h";
+
+        // Hide target limits dynamically
+        document.querySelectorAll(".metric-limit").forEach(el => {
+            el.style.display = "none";
         });
 
-        if (stages["assembly"]) {
-            document.getElementById("assembly-time").textContent =
-                stages["assembly"].avg_elapsed + " h";
-
-            document.getElementById("assembly-target").textContent =
-                stages["assembly"].target_hours + " h";
-        }
-
-        if (stages["production"]) {
-            document.getElementById("production-time").textContent =
-                stages["production"].avg_elapsed + " h";
-
-            document.getElementById("production-target").textContent =
-                stages["production"].target_hours + " h";
-        }
-
-        const qc =
-            stages["quality check"] ||
-            stages["qc"];
-
-        if (qc) {
-            document.getElementById("qc-time").textContent =
-                qc.avg_elapsed + " h";
-
-            document.getElementById("qc-target").textContent =
-                qc.target_hours + " h";
-        }
-
         document.getElementById("production-output").textContent =
-            data.logs.filter(log => log.log_type === "Batch Stage").length;
-        const passRate =
-            data.averages.avg_qc_pass_rate_percent || 0;
+            data.production_completed_count;
+
+        const passRate = data.averages.avg_qc_pass_rate_percent !== null ? data.averages.avg_qc_pass_rate_percent : 0;
 
         document.getElementById("qc-pass").textContent =
-            passRate + "%";
+            Number(passRate).toFixed(2) + "%";
 
         document.getElementById("qc-fail").textContent =
-            (100 - passRate) + "%";
+            (100 - Number(passRate)).toFixed(2) + "%";
+
         const tbody = document.getElementById("delay-body");
         tbody.innerHTML = "";
 
-        data.logs
-            .filter(log => log.log_type === "Batch Stage")
-            .forEach(log => {
-
-                const delayed =
-                    log.detail.includes("Delayed");
-
+        if (data.delay_logs && data.delay_logs.length > 0) {
+            data.delay_logs.forEach(log => {
                 tbody.innerHTML += `
                 <tr>
-                    <td>${log.ref_id}</td>
-
+                    <td>${log.stage_name}</td>
+                    <td>${log.actual_time_elapsed}</td>
+                    <td>${log.target_time}</td>
                     <td>
-                        ${log.event_time}
-                    </td>
-
-                    <td>--</td>
-
-                    <td>
-                        <span class="delay-pill">
-                            ${delayed ? "Delayed" : "On Time"}
+                        <span class="delay-pill ${log.delay_display === 'On Time' ? 'on-time' : 'delayed'}">
+                            ${log.delay_display}
                         </span>
                     </td>
                 </tr>
                 `;
             });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No completed stages logged.</td></tr>`;
+        }
 
     } catch (error) {
         console.error("Reports Error:", error);

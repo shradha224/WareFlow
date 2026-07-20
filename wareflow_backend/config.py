@@ -8,6 +8,10 @@ Used by: db.py, app.py, auth.py
 """
 
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file if it exists
+load_dotenv()
 
 class Config:
     DB_HOST = os.environ.get("DB_HOST", "localhost")
@@ -18,6 +22,12 @@ class Config:
 
     JWT_SECRET = os.environ.get("JWT_SECRET", "change-this-in-production")
     JWT_EXPIRY_MINUTES = int(os.environ.get("JWT_EXPIRY_MINUTES", 480))  # 8 hr shift
+
+    SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+    SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
+    SMTP_USER = os.environ.get("SMTP_USER")
+    SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
+    SMTP_FROM_EMAIL = os.environ.get("SMTP_FROM_EMAIL", os.environ.get("SMTP_USER"))
 
     # Ordered list of production stage names, used to determine which stage
     # comes next when a batch stage's target quantity is reached.

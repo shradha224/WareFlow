@@ -20,6 +20,7 @@ import background_jobs as jobs
 from scheduler import start_scheduler
 
 from routes.login import login_bp
+from routes.auth_extended import auth_extended_bp
 from routes.supervisor_dashboard import supervisor_bp
 from routes.warehouse_inventory import warehouse_inventory_bp
 from routes.launch_batch import launch_batch_bp
@@ -33,11 +34,25 @@ from routes.component_consumption import component_consumption_bp
 from routes.quality_check import quality_check_bp
 
 
+import datetime
+from decimal import Decimal
+from flask.json.provider import DefaultJSONProvider
+
+class CustomJSONProvider(DefaultJSONProvider):
+    def default(self, obj):
+        if isinstance(obj, (datetime.datetime, datetime.date)):
+            return obj.isoformat()
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super().default(obj)
+
 def create_app():
     app = Flask(__name__)
+    app.json = CustomJSONProvider(app)
     CORS(app)
     for bp in (
         login_bp,
+        auth_extended_bp,
         supervisor_bp,
         warehouse_inventory_bp,
         launch_batch_bp,
@@ -51,6 +66,7 @@ def create_app():
         quality_check_bp,
     ):
         app.register_blueprint(bp)
+
 
     @app.route("/api/health", methods=["GET"])
     def health():

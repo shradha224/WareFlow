@@ -52,8 +52,16 @@ def start_scheduler():
         id="demand_prediction",
         replace_existing=True,
     )
+    _scheduler.add_job(
+        jobs.cleanup_expired_otps,
+        "interval",
+        minutes=5,
+        id="cleanup_expired_otps",
+        replace_existing=True,
+    )
 
     _scheduler.start()
+
     return _scheduler
 
 

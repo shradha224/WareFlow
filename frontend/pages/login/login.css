@@ -158,3 +158,40 @@ body::before{
         font-size:18px;
     }
 }
+
+.forgot-link-container {
+    text-align: right;
+    margin-top: 10px;
+}
+
+.forgot-link {
+    color: #2367C1;
+    font-size: 16px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.25s ease;
+}
+
+.forgot-link:hover {
+    color: #184F97;
+    text-decoration: underline;
+}
+
+.register-link-container {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 18px;
+    color: #444;
+}
+
+.register-link {
+    color: #2367C1;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.25s ease;
+}
+
+.register-link:hover {
+    color: #184F97;
+    text-decoration: underline;
+}

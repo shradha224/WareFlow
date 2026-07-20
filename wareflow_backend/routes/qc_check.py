@@ -17,6 +17,22 @@ from db import get_db_cursor
 qc_check_bp = Blueprint("qc_check", __name__)
 
 
+@qc_check_bp.route("/api/qc/pending", methods=["GET"])
+@login_required
+@role_required("Inventory Inspector", "Supervisor")
+def get_pending_qc_components():
+    with get_db_cursor() as cur:
+        cur.execute("""
+            SELECT mr.request_id, mr.component_id, c.part_name, mr.requested_qty, mr.created_at, mr.batch_id
+            FROM Material_Requests mr
+            JOIN Components c ON mr.component_id = c.component_id
+            WHERE mr.status IN ('Approved', 'Fulfilled')
+            ORDER BY mr.created_at DESC
+        """)
+        pending = cur.fetchall()
+    return jsonify({"pending": pending}), 200
+
+
 @qc_check_bp.route("/api/qc/component", methods=["POST"])
 @login_required
 @role_required("Inventory Inspector", "Supervisor")
@@ -25,6 +41,7 @@ def record_component_qc():
     component_id = data.get("component_id")
     qty_inspected = data.get("qty_inspected")
     result = data.get("result")
+    request_id = data.get("request_id")
 
     if not component_id or not qty_inspected or result not in ("Pass", "Fail"):
         return jsonify({"error": "component_id, qty_inspected, and result ('Pass'/'Fail') are required"}), 400
@@ -35,26 +52,44 @@ def record_component_qc():
         if not comp:
             return jsonify({"error": f"Unknown component_id '{component_id}'"}), 404
 
+        batch_id = None
+        if request_id:
+            cur.execute("SELECT batch_id FROM Material_Requests WHERE request_id = %s", (request_id,))
+            req_row = cur.fetchone()
+            if req_row:
+                batch_id = req_row["batch_id"]
+
         cur.execute("""
-            INSERT INTO Quality_Inspections (component_id, qty_inspected, result)
-            VALUES (%s, %s, %s)
-        """, (component_id, qty_inspected, result))
+            INSERT INTO Quality_Check (inspection_type, component_id, batch_id, qty_checked, result)
+            VALUES ('Raw Material', %s, %s, %s, %s)
+        """, (component_id, batch_id, qty_inspected, result))
         inspection_id = cur.lastrowid
 
-        if result == "Fail":
-            # Rejected units are pulled out of usable warehouse stock
-            new_stock = max(0, comp["warehouse_stock"] - qty_inspected)
+        if result == "Pass":
             cur.execute("""
-                UPDATE Components SET warehouse_stock = %s WHERE component_id = %s
-            """, (new_stock, component_id))
+                UPDATE Components SET warehouse_stock = warehouse_stock + %s
+                WHERE component_id = %s
+            """, (qty_inspected, component_id))
+        else:
+            if not request_id:
+                new_stock = max(0, comp["warehouse_stock"] - qty_inspected)
+                cur.execute("""
+                    UPDATE Components SET warehouse_stock = %s WHERE component_id = %s
+                """, (new_stock, component_id))
+
+        if request_id:
+            new_status = "QC Passed" if result == "Pass" else "QC Failed"
+            cur.execute("""
+                UPDATE Material_Requests SET status = %s WHERE request_id = %s
+            """, (new_status, request_id))
 
         # Refresh quality metrics for this component
         cur.execute("""
             SELECT
-                SUM(CASE WHEN result = 'Pass' THEN qty_inspected ELSE 0 END) AS total_passed,
-                SUM(CASE WHEN result = 'Fail' THEN qty_inspected ELSE 0 END) AS total_failed
-            FROM Quality_Inspections
-            WHERE component_id = %s
+                SUM(CASE WHEN result = 'Pass' THEN qty_checked ELSE 0 END) AS total_passed,
+                SUM(CASE WHEN result = 'Fail' THEN qty_checked ELSE 0 END) AS total_failed
+            FROM Quality_Check
+            WHERE component_id = %s AND inspection_type = 'Raw Material'
         """, (component_id,))
         metrics = cur.fetchone()
 
