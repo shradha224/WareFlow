@@ -65,7 +65,7 @@ def mark_consumption_complete():
 
     with get_db_cursor(commit=True) as cur:
         # Check if the unmapped stage name exists for this batch
-        cur.execute("SELECT 1 FROM Batch_Stages WHERE batch_id = %s AND stage_name = %s", (batch_id, stage_name))
+        cur.execute("SELECT 1 FROM batch_stages WHERE batch_id = %s AND stage_name = %s", (batch_id, stage_name))
         if cur.fetchone():
             db_stage_name = stage_name
         else:
@@ -73,13 +73,13 @@ def mark_consumption_complete():
 
     with get_db_cursor(commit=True) as cur:
         # Validate batch + component
-        cur.execute("SELECT * FROM Production_Batches WHERE batch_id = %s FOR UPDATE", (batch_id,))
+        cur.execute("SELECT * FROM production_batches WHERE batch_id = %s FOR UPDATE", (batch_id,))
         batch = cur.fetchone()
         if not batch:
             return jsonify({"error": f"Unknown batch_id '{batch_id}'"}), 404
 
         # Check preceding stage completion
-        cur.execute("SELECT stage_name, status FROM Batch_Stages WHERE batch_id = %s ORDER BY stage_id ASC", (batch_id,))
+        cur.execute("SELECT stage_name, status FROM batch_stages WHERE batch_id = %s ORDER BY stage_id ASC", (batch_id,))
         stages_list = cur.fetchall()
         
         # Find index of db_stage_name
@@ -111,13 +111,13 @@ def mark_consumption_complete():
         # Check if already consumed in any stage for this batch
         cur.execute("""
             SELECT COUNT(*) AS cnt
-            FROM Component_Consumption
+            FROM component_consumption
             WHERE batch_id = %s AND component_id = %s
         """, (batch_id, component_id))
         already_consumed = cur.fetchone()["cnt"] > 0
 
         if not already_consumed:
-            cur.execute("SELECT floor_stock FROM Components WHERE component_id = %s FOR UPDATE", (component_id,))
+            cur.execute("SELECT floor_stock FROM components WHERE component_id = %s FOR UPDATE", (component_id,))
             comp = cur.fetchone()
             if not comp:
                 return jsonify({"error": f"Unknown component_id '{component_id}'"}), 404
@@ -130,13 +130,13 @@ def mark_consumption_complete():
 
             # 1. Reduce floor stock
             cur.execute("""
-                UPDATE Components SET floor_stock = floor_stock - %s
+                UPDATE components SET floor_stock = floor_stock - %s
                 WHERE component_id = %s
             """, (qty_used, component_id))
 
         # 2. Create consumption log
         cur.execute("""
-            INSERT INTO Component_Consumption (batch_id, component_id, stage_name, qty_used, status)
+            INSERT INTO component_consumption (batch_id, component_id, stage_name, qty_used, status)
             VALUES (%s, %s, %s, %s, 'Active')
         """, (batch_id, component_id, db_stage_name, qty_used))
         consumption_id = cur.lastrowid
@@ -155,7 +155,7 @@ def mark_consumption_complete():
         # Calculate component progress in this stage
         cur.execute("""
             SELECT SUM(qty_used) AS total
-            FROM Component_Consumption
+            FROM component_consumption
             WHERE batch_id = %s AND component_id = %s AND stage_name = %s
         """, (batch_id, component_id, db_stage_name))
         total_row = cur.fetchone()
@@ -168,8 +168,8 @@ def mark_consumption_complete():
         remaining_stages = []
 
         if target_reached:
-            # System checks Batch_Stages for remaining stages, excluding QC stages
-            cur.execute("SELECT stage_name, status, stage_id FROM Batch_Stages WHERE batch_id = %s ORDER BY stage_id ASC", (batch_id,))
+            # System checks batch_stages for remaining stages, excluding QC stages
+            cur.execute("SELECT stage_name, status, stage_id FROM batch_stages WHERE batch_id = %s ORDER BY stage_id ASC", (batch_id,))
             all_stages = cur.fetchall()
             
             is_qc_stage = lambda name: name.lower() in ("qc", "quality check", "quality", "final qc", "quality control")
@@ -192,7 +192,7 @@ def mark_consumption_complete():
                 if all_components_done:
                     # Complete the final stage now.
                     cur.execute("""
-                        SELECT * FROM Batch_Stages
+                        SELECT * FROM batch_stages
                         WHERE batch_id = %s AND stage_name = %s
                         FOR UPDATE
                     """, (batch_id, db_stage_name))
@@ -200,20 +200,20 @@ def mark_consumption_complete():
 
                     if stage:
                         cur.execute("""
-                            UPDATE Batch_Stages
+                            UPDATE batch_stages
                             SET end_timestamp = CURRENT_TIMESTAMP,
                                 actual_hours = TIMESTAMPDIFF(MINUTE, COALESCE(start_timestamp, CURRENT_TIMESTAMP), CURRENT_TIMESTAMP) / 60,
                                 status = 'Complete'
                             WHERE stage_id = %s
                         """, (stage["stage_id"],))
 
-                        cur.execute("SELECT actual_hours, target_hours FROM Batch_Stages WHERE stage_id = %s", (stage["stage_id"],))
+                        cur.execute("SELECT actual_hours, target_hours FROM batch_stages WHERE stage_id = %s", (stage["stage_id"],))
                         updated_stage = cur.fetchone()
                         actual_h = float(updated_stage["actual_hours"] or 0)
                         target_h = float(updated_stage["target_hours"] or 0)
                         delay_hours = max(0.0, actual_h - target_h)
                         cur.execute("""
-                            UPDATE Batch_Stages SET delayed_by = %s WHERE stage_id = %s
+                            UPDATE batch_stages SET delayed_by = %s WHERE stage_id = %s
                         """, (delay_hours, stage["stage_id"]))
 
                         stage_closure = {
@@ -228,7 +228,7 @@ def mark_consumption_complete():
                     if qc_stages:
                         final_qc_stage = qc_stages[0]
                         cur.execute("""
-                            UPDATE Batch_Stages
+                            UPDATE batch_stages
                             SET start_timestamp = COALESCE(start_timestamp, CURRENT_TIMESTAMP),
                                 status = 'In Progress'
                             WHERE stage_id = %s
@@ -236,18 +236,18 @@ def mark_consumption_complete():
 
                     # Mark production batch status as Complete and set completed_qty to target_qty
                     cur.execute("""
-                        UPDATE Production_Batches
+                        UPDATE production_batches
                         SET status = 'Complete', completed_qty = target_qty
                         WHERE batch_id = %s
                     """, (batch_id,))
 
                     # Check and generate Finished Goods record if not exists
-                    cur.execute("SELECT finished_good_id FROM Finished_Goods WHERE batch_id = %s", (batch_id,))
+                    cur.execute("SELECT finished_good_id FROM finished_goods WHERE batch_id = %s", (batch_id,))
                     if not cur.fetchone():
                         import uuid
                         finished_good_id = f"FG-{uuid.uuid4().hex[:8].upper()}"
                         cur.execute("""
-                            INSERT INTO Finished_Goods (finished_good_id, batch_id, product_id, qc_status)
+                            INSERT INTO finished_goods (finished_good_id, batch_id, product_id, qc_status)
                             VALUES (%s, %s, %s, 'Pending QC')
                         """, (finished_good_id, batch_id, batch["product_id"]))
 
@@ -270,14 +270,14 @@ def get_received_components():
     if not batch_id:
         return jsonify({"error": "batch_id is required"}), 400
     with get_db_cursor() as cur:
-        cur.execute("SELECT product_id, target_qty FROM Production_Batches WHERE batch_id = %s", (batch_id,))
+        cur.execute("SELECT product_id, target_qty FROM production_batches WHERE batch_id = %s", (batch_id,))
         batch = cur.fetchone()
         if not batch:
             return jsonify({"error": f"Unknown batch_id '{batch_id}'"}), 404
         
         # Get final production stage of this batch (excluding QC stages)
         cur.execute("""
-            SELECT stage_name FROM Batch_Stages
+            SELECT stage_name FROM batch_stages
             WHERE batch_id = %s
             ORDER BY stage_id ASC
         """, (batch_id,))
@@ -288,9 +288,9 @@ def get_received_components():
 
         cur.execute("""
             SELECT DISTINCT c.component_id, c.part_name, bom.quantity_required
-            FROM Components c
+            FROM components c
             JOIN junction_of_materials bom ON c.component_id = bom.component_id
-            JOIN Material_Transfers mt ON mt.component_id = c.component_id
+            JOIN material_transfers mt ON mt.component_id = c.component_id
             WHERE bom.product_id = %s
               AND mt.transfer_status = 'Received'
               AND mt.batch_id = %s
@@ -304,7 +304,7 @@ def get_received_components():
                 req_qty = comp["quantity_required"] * batch["target_qty"]
                 cur.execute("""
                     SELECT SUM(qty_used) AS total
-                    FROM Component_Consumption
+                    FROM component_consumption
                     WHERE batch_id = %s AND component_id = %s AND stage_name = %s
                 """, (batch_id, comp["component_id"], final_stage))
                 consumed = cur.fetchone()["total"] or 0
@@ -327,7 +327,7 @@ def get_active_batch_stages():
     with get_db_cursor() as cur:
         cur.execute("""
             SELECT stage_name
-            FROM Batch_Stages
+            FROM batch_stages
             WHERE batch_id = %s
             ORDER BY stage_id ASC
         """, (batch_id,))
@@ -362,21 +362,21 @@ def transition_batch_stage(batch_id):
 
     with get_db_cursor(commit=True) as cur:
         # Check if the unmapped current stage name exists for this batch
-        cur.execute("SELECT 1 FROM Batch_Stages WHERE batch_id = %s AND stage_name = %s", (batch_id, current_stage))
+        cur.execute("SELECT 1 FROM batch_stages WHERE batch_id = %s AND stage_name = %s", (batch_id, current_stage))
         if cur.fetchone():
             db_current_stage = current_stage
         else:
             db_current_stage = STAGE_NAME_MAP.get(current_stage.lower(), current_stage)
 
         # Check if the unmapped next stage name exists for this batch
-        cur.execute("SELECT 1 FROM Batch_Stages WHERE batch_id = %s AND stage_name = %s", (batch_id, next_stage))
+        cur.execute("SELECT 1 FROM batch_stages WHERE batch_id = %s AND stage_name = %s", (batch_id, next_stage))
         if cur.fetchone():
             db_next_stage = next_stage
         else:
             db_next_stage = STAGE_NAME_MAP.get(next_stage.lower(), next_stage)
 
         # 1. Check if the current stage is completed for ALL components
-        cur.execute("SELECT product_id, target_qty FROM Production_Batches WHERE batch_id = %s", (batch_id,))
+        cur.execute("SELECT product_id, target_qty FROM production_batches WHERE batch_id = %s", (batch_id,))
         batch = cur.fetchone()
         product_id = batch["product_id"]
         target_qty = batch["target_qty"]
@@ -391,7 +391,7 @@ def transition_batch_stage(batch_id):
             
             cur.execute("""
                 SELECT SUM(qty_used) AS total_consumed
-                FROM Component_Consumption
+                FROM component_consumption
                 WHERE batch_id = %s AND component_id = %s AND stage_name = %s
             """, (batch_id, comp_id, db_current_stage))
             cc_row = cur.fetchone()
@@ -404,32 +404,32 @@ def transition_batch_stage(batch_id):
         if all_components_done:
             # Complete the current stage
             cur.execute("""
-                SELECT * FROM Batch_Stages
+                SELECT * FROM batch_stages
                 WHERE batch_id = %s AND stage_name = %s
                 FOR UPDATE
             """, (batch_id, db_current_stage))
             curr_stage_row = cur.fetchone()
             if curr_stage_row:
                 cur.execute("""
-                    UPDATE Batch_Stages
+                    UPDATE batch_stages
                     SET end_timestamp = CURRENT_TIMESTAMP,
                         actual_hours = TIMESTAMPDIFF(MINUTE, COALESCE(start_timestamp, CURRENT_TIMESTAMP), CURRENT_TIMESTAMP) / 60,
                         status = 'Complete'
                     WHERE stage_id = %s
                 """, (curr_stage_row["stage_id"],))
 
-                cur.execute("SELECT actual_hours, target_hours FROM Batch_Stages WHERE stage_id = %s", (curr_stage_row["stage_id"],))
+                cur.execute("SELECT actual_hours, target_hours FROM batch_stages WHERE stage_id = %s", (curr_stage_row["stage_id"],))
                 updated_stage = cur.fetchone()
                 actual_h = float(updated_stage["actual_hours"] or 0)
                 target_h = float(updated_stage["target_hours"] or 0)
                 delay_hours = max(0.0, actual_h - target_h)
                 cur.execute("""
-                    UPDATE Batch_Stages SET delayed_by = %s WHERE stage_id = %s
+                    UPDATE batch_stages SET delayed_by = %s WHERE stage_id = %s
                 """, (delay_hours, curr_stage_row["stage_id"]))
 
             # Start the next stage
             cur.execute("""
-                SELECT * FROM Batch_Stages
+                SELECT * FROM batch_stages
                 WHERE batch_id = %s AND stage_name = %s
                 FOR UPDATE
             """, (batch_id, db_next_stage))
@@ -437,7 +437,7 @@ def transition_batch_stage(batch_id):
             if next_stage_row:
                 if next_stage_row["status"] != "In Progress":
                     cur.execute("""
-                        UPDATE Batch_Stages
+                        UPDATE batch_stages
                         SET start_timestamp = COALESCE(start_timestamp, CURRENT_TIMESTAMP),
                             status = 'In Progress'
                         WHERE stage_id = %s

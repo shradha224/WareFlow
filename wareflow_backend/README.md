@@ -60,7 +60,7 @@ print(hash_password("your-password"))
 | `PATCH /api/material-requests/<id>` | Raw Material Requests | Approve/fulfil, move to Raw Material QC |
 | `PATCH /api/transfers/<id>/verify` | Floor Material Intake | Update transfer status + timestamp |
 | `POST /api/consumption` | Component Consumption | Reduce floor stock, log, advance stage |
-| `POST /api/qc/finished-good` | Quality Check | Update quality counts, Finished_Goods.qc_status |
+| `POST /api/qc/finished-good` | Quality Check | Update quality counts, finished_goods.qc_status |
 | `POST /api/jobs/run/<job_name>` | (ops) | Manually trigger any background process |
 
 ## Background processes (`background_jobs.py`)
@@ -76,11 +76,11 @@ print(hash_password("your-password"))
 ## Notes on schema mapping
 
 - The spec mentions a `FloorHouseInventory` record; the schema doesn't have
-  that table, so **`Material_Transfers`** plays that role (dispatch ->
+  that table, so **`material_transfers`** plays that role (dispatch ->
   `In Transit`, then Floor Material Intake marks it `Received` and adds the
-  quantity onto `Components.floor_stock`).
+  quantity onto `components.floor_stock`).
 - "Move to Raw Material QC" (Raw Material Requests page) is implemented as
-  creating an `In Transit` `Material_Transfers` row, which Floor Material
+  creating an `In Transit` `material_transfers` row, which Floor Material
   Intake later verifies — this is the same pipeline QC/floor staff use for
   regular dispatches.
 - Stage progression uses a configurable `STAGE_ORDER` (see `config.py` /

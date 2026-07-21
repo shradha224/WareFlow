@@ -7,7 +7,7 @@ Endpoint:
   PATCH /api/material-requests/<request_id>
         { action: 'approve' | 'fulfil' }
         -> Update request status. On 'fulfil', the request moves to
-           Raw Material QC by creating a Material_Transfers record
+           Raw Material QC by creating a material_transfers record
            ('In Transit') that the Floor Material Intake page later verifies.
 """
 
@@ -30,8 +30,8 @@ def get_material_requests():
     with get_db_cursor() as cur:
         cur.execute("""
             SELECT mr.request_id, mr.component_id, c.part_name, mr.requested_qty, mr.status, mr.created_at, mr.batch_id
-            FROM Material_Requests mr
-            JOIN Components c ON mr.component_id = c.component_id
+            FROM material_requests mr
+            JOIN components c ON mr.component_id = c.component_id
             ORDER BY mr.created_at DESC
         """)
         requests = cur.fetchall()
@@ -49,14 +49,14 @@ def update_material_request(request_id):
         return jsonify({"error": f"action must be one of {list(VALID_ACTIONS.keys())}"}), 400
 
     with get_db_cursor(commit=True) as cur:
-        cur.execute("SELECT * FROM Material_Requests WHERE request_id = %s FOR UPDATE", (request_id,))
+        cur.execute("SELECT * FROM material_requests WHERE request_id = %s FOR UPDATE", (request_id,))
         req = cur.fetchone()
         if not req:
             return jsonify({"error": f"No material request with id {request_id}"}), 404
 
         new_status = VALID_ACTIONS[action]
         cur.execute("""
-            UPDATE Material_Requests SET status = %s WHERE request_id = %s
+            UPDATE material_requests SET status = %s WHERE request_id = %s
         """, (new_status, request_id))
 
     return jsonify({

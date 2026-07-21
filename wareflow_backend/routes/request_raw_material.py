@@ -19,7 +19,7 @@ def get_components():
     with get_db_cursor() as cur:
         cur.execute("""
             SELECT component_id, part_name
-            FROM Components
+            FROM components
             ORDER BY part_name
         """)
 
@@ -40,12 +40,12 @@ def submit_material_request():
         return jsonify({"error": "requested_qty must be positive"}), 400
 
     with get_db_cursor(commit=True) as cur:
-        cur.execute("SELECT component_id FROM Components WHERE component_id = %s", (component_id,))
+        cur.execute("SELECT component_id FROM components WHERE component_id = %s", (component_id,))
         if not cur.fetchone():
             return jsonify({"error": f"Unknown component_id '{component_id}'"}), 404
 
         cur.execute("""
-            INSERT INTO Material_Requests (component_id, requested_qty, status)
+            INSERT INTO material_requests (component_id, requested_qty, status)
             VALUES (%s, %s, 'Pending')
         """, (component_id, requested_qty))
         request_id = cur.lastrowid

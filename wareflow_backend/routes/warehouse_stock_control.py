@@ -6,7 +6,7 @@ USED ON: Warehouse Stock Control page.
 Endpoints:
   POST /api/stock/dispatch
        { component_id, dispatched_qty }
-       -> Reduce warehouse stock and create a Material_Transfers record
+       -> Reduce warehouse stock and create a material_transfers record
           (transfer_status = 'In Transit'). This is the schema's
           equivalent of the spec's "FloorHouseInventory record".
 
@@ -42,7 +42,7 @@ def dispatch_material():
 
     with get_db_cursor(commit=True) as cur:
         cur.execute(
-            "SELECT warehouse_stock FROM Components WHERE component_id = %s FOR UPDATE",
+            "SELECT warehouse_stock FROM components WHERE component_id = %s FOR UPDATE",
             (component_id,),
         )
         row = cur.fetchone()
@@ -56,12 +56,12 @@ def dispatch_material():
             }), 409
 
         cur.execute("""
-            UPDATE Components SET warehouse_stock = warehouse_stock - %s
+            UPDATE components SET warehouse_stock = warehouse_stock - %s
             WHERE component_id = %s
         """, (dispatched_qty, component_id))
 
         cur.execute("""
-            INSERT INTO Material_Transfers (component_id, dispatched_qty, transfer_status)
+            INSERT INTO material_transfers (component_id, dispatched_qty, transfer_status)
             VALUES (%s, %s, 'In Transit')
         """, (component_id, dispatched_qty))
         transfer_id = cur.lastrowid
@@ -93,7 +93,7 @@ def add_new_item():
 
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
-            INSERT INTO Components
+            INSERT INTO components
                 (component_id, part_name, description, warehouse_stock, floor_stock, min_threshold)
             VALUES (%s, %s, %s, %s, %s, %s)
         """, (component_id, part_name, description, warehouse_stock, floor_stock, min_threshold))
@@ -114,7 +114,7 @@ def add_new_item():
 @role_required("Supervisor", "Inventory Inspector")
 def dispatch_batch_materials(batch_id):
     with get_db_cursor(commit=True) as cur:
-        cur.execute("SELECT pb.*, p.product_name FROM Production_Batches pb JOIN Products p ON pb.product_id = p.product_id WHERE pb.batch_id = %s FOR UPDATE", (batch_id,))
+        cur.execute("SELECT pb.*, p.product_name FROM production_batches pb JOIN products p ON pb.product_id = p.product_id WHERE pb.batch_id = %s FOR UPDATE", (batch_id,))
         batch = cur.fetchone()
         if not batch:
             return jsonify({"error": f"Unknown batch '{batch_id}'"}), 404
@@ -133,7 +133,7 @@ def dispatch_batch_materials(batch_id):
             # Check already transferred
             cur.execute("""
                 SELECT SUM(dispatched_qty) AS dispatched 
-                FROM Material_Transfers 
+                FROM material_transfers 
                 WHERE batch_id = %s AND component_id = %s
             """, (batch_id, item["component_id"]))
             transferred = cur.fetchone()["dispatched"] or 0
@@ -141,7 +141,7 @@ def dispatch_batch_materials(batch_id):
             # Check pending requests
             cur.execute("""
                 SELECT SUM(requested_qty) AS requested 
-                FROM Material_Requests 
+                FROM material_requests 
                 WHERE batch_id = %s AND component_id = %s AND status = 'Pending'
             """, (batch_id, item["component_id"]))
             requested = cur.fetchone()["requested"] or 0
@@ -151,7 +151,7 @@ def dispatch_batch_materials(batch_id):
                 # Already fully covered
                 continue
                 
-            cur.execute("SELECT warehouse_stock, part_name FROM Components WHERE component_id = %s FOR UPDATE", (item["component_id"],))
+            cur.execute("SELECT warehouse_stock, part_name FROM components WHERE component_id = %s FOR UPDATE", (item["component_id"],))
             comp = cur.fetchone()
             if not comp:
                 return jsonify({"error": f"Unknown component '{item['component_id']}'"}), 404
@@ -171,12 +171,12 @@ def dispatch_batch_materials(batch_id):
         transfers = []
         for item in components_to_dispatch:
             cur.execute("""
-                UPDATE Components SET warehouse_stock = warehouse_stock - %s
+                UPDATE components SET warehouse_stock = warehouse_stock - %s
                 WHERE component_id = %s
             """, (item["qty"], item["component_id"]))
 
             cur.execute("""
-                INSERT INTO Material_Transfers (component_id, dispatched_qty, transfer_status, batch_id)
+                INSERT INTO material_transfers (component_id, dispatched_qty, transfer_status, batch_id)
                 VALUES (%s, %s, 'In Transit', %s)
             """, (item["component_id"], item["qty"], batch_id))
             transfers.append({
@@ -186,7 +186,7 @@ def dispatch_batch_materials(batch_id):
                 "transfer_status": "In Transit"
             })
 
-        cur.execute("UPDATE Production_Batches SET status = 'Dispatched' WHERE batch_id = %s", (batch_id,))
+        cur.execute("UPDATE production_batches SET status = 'Dispatched' WHERE batch_id = %s", (batch_id,))
 
     return jsonify({
         "message": f"Materials successfully dispatched for batch {batch_id}",

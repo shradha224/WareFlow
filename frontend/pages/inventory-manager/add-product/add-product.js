@@ -1,4 +1,4 @@
-let addedComponents = [];
+let addedcomponents = [];
 let addedStages = [];
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function initializePage() {
     registerEventListeners();
-    loadComponents();
+    loadcomponents();
     renderAddedStages();
 }
 
@@ -37,7 +37,7 @@ function registerEventListeners() {
 }
 
 
-async function loadComponents() {
+async function loadcomponents() {
     try {
         const response = await fetch("http://localhost:5000/api/components", {
             headers: {
@@ -81,12 +81,12 @@ function addComponentToList() {
     const part_name = selectedOption.dataset.name;
 
     // Check if component already added
-    if (addedComponents.some(c => c.component_id === component_id)) {
+    if (addedcomponents.some(c => c.component_id === component_id)) {
         alert("Component already added");
         return;
     }
 
-    addedComponents.push({
+    addedcomponents.push({
         component_id,
         part_name,
         quantity_required: qty
@@ -95,20 +95,20 @@ function addComponentToList() {
     qtyInput.value = "";
     select.value = "";
 
-    renderAddedComponents();
+    renderAddedcomponents();
 }
 
 window.removeComponent = function(index) {
-    addedComponents.splice(index, 1);
-    renderAddedComponents();
+    addedcomponents.splice(index, 1);
+    renderAddedcomponents();
 };
 
-function renderAddedComponents() {
+function renderAddedcomponents() {
     const listDiv = document.getElementById("component-list");
     if (!listDiv) return;
     listDiv.innerHTML = "";
 
-    addedComponents.forEach((item, index) => {
+    addedcomponents.forEach((item, index) => {
         listDiv.innerHTML += `
             <div class="added-component-item" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #f3f5f7; padding: 8px 12px; border-radius: 8px;">
                 <span><strong>${item.part_name}</strong> &times; ${item.quantity_required} units</span>
@@ -194,7 +194,7 @@ async function submitProduct(event) {
         return;
     }
 
-    if (addedComponents.length === 0) {
+    if (addedcomponents.length === 0) {
         alert("Please add at least one component to the mapping");
         return;
     }
@@ -213,8 +213,8 @@ async function submitProduct(event) {
             },
             body: JSON.stringify({
                 product_name,
-                description: `Automatically created with ${addedComponents.length} components`,
-                components: addedComponents.map(c => ({
+                description: `Automatically created with ${addedcomponents.length} components`,
+                components: addedcomponents.map(c => ({
                     component_id: c.component_id,
                     quantity_required: c.quantity_required
                 })),

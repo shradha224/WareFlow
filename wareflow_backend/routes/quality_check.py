@@ -7,7 +7,7 @@ Endpoint:
   POST /api/qc/finished-good
        { batch_id, finished_good_id, qty_inspected, result }  result: 'Pass' | 'Fail'
        -> Update quality counts and dashboard metrics. On a result, the
-          matching Finished_Goods.qc_status is updated to 'Passed' or 'Failed'.
+          matching finished_goods.qc_status is updated to 'Passed' or 'Failed'.
 """
 
 from flask import Blueprint, request, jsonify
@@ -44,20 +44,20 @@ def record_finished_good_qc():
         resolved_batch_id = None
         resolved_finished_good_id = None
 
-        # Check if target_id matches a Finished_Goods record
-        cur.execute("SELECT finished_good_id, batch_id FROM Finished_Goods WHERE finished_good_id = %s", (target_id,))
+        # Check if target_id matches a finished_goods record
+        cur.execute("SELECT finished_good_id, batch_id FROM finished_goods WHERE finished_good_id = %s", (target_id,))
         fg_row = cur.fetchone()
         if fg_row:
             resolved_finished_good_id = fg_row["finished_good_id"]
             resolved_batch_id = fg_row["batch_id"]
         else:
             # Check if it matches a production batch
-            cur.execute("SELECT batch_id FROM Production_Batches WHERE batch_id = %s", (target_id,))
+            cur.execute("SELECT batch_id FROM production_batches WHERE batch_id = %s", (target_id,))
             pb_row = cur.fetchone()
             if pb_row:
                 resolved_batch_id = pb_row["batch_id"]
                 # See if there's an associated finished good
-                cur.execute("SELECT finished_good_id FROM Finished_Goods WHERE batch_id = %s", (resolved_batch_id,))
+                cur.execute("SELECT finished_good_id FROM finished_goods WHERE batch_id = %s", (resolved_batch_id,))
                 fg_assoc = cur.fetchone()
                 if fg_assoc:
                     resolved_finished_good_id = fg_assoc["finished_good_id"]
@@ -66,7 +66,7 @@ def record_finished_good_qc():
 
         # If qty_inspected not passed, default to completed_qty of the batch
         if not qty_inspected:
-            cur.execute("SELECT completed_qty, target_qty FROM Production_Batches WHERE batch_id = %s", (resolved_batch_id,))
+            cur.execute("SELECT completed_qty, target_qty FROM production_batches WHERE batch_id = %s", (resolved_batch_id,))
             batch_row = cur.fetchone()
             if batch_row:
                 qty_inspected = batch_row["completed_qty"] or batch_row["target_qty"] or 1
@@ -75,7 +75,7 @@ def record_finished_good_qc():
 
         # 2. Record inspection
         cur.execute("""
-            INSERT INTO Quality_Check (inspection_type, finished_good_id, batch_id, qty_checked, result)
+            INSERT INTO quality_check (inspection_type, finished_good_id, batch_id, qty_checked, result)
             VALUES ('Finished Good', %s, %s, %s, %s)
         """, (resolved_finished_good_id, resolved_batch_id, qty_inspected, result))
         inspection_id = cur.lastrowid
@@ -85,20 +85,20 @@ def record_finished_good_qc():
         if resolved_finished_good_id:
             new_qc_status = "Passed" if result == "Pass" else "Failed"
             cur.execute("""
-                UPDATE Finished_Goods SET qc_status = %s WHERE finished_good_id = %s
+                UPDATE finished_goods SET qc_status = %s WHERE finished_good_id = %s
             """, (new_qc_status, resolved_finished_good_id))
             updated_finished_good = {"finished_good_id": resolved_finished_good_id, "qc_status": new_qc_status}
 
-            # Update final QC stage in Batch_Stages
+            # Update final QC stage in batch_stages
             cur.execute("""
-                SELECT stage_id FROM Batch_Stages
+                SELECT stage_id FROM batch_stages
                 WHERE batch_id = %s
                 ORDER BY stage_id DESC LIMIT 1
             """, (resolved_batch_id,))
             final_stage_row = cur.fetchone()
             if final_stage_row:
                 cur.execute("""
-                    UPDATE Batch_Stages
+                    UPDATE batch_stages
                     SET status = 'Complete', end_timestamp = CURRENT_TIMESTAMP,
                         actual_hours = TIMESTAMPDIFF(MINUTE, COALESCE(start_timestamp, CURRENT_TIMESTAMP), CURRENT_TIMESTAMP) / 60
                     WHERE stage_id = %s
@@ -109,7 +109,7 @@ def record_finished_good_qc():
             SELECT
                 SUM(CASE WHEN result = 'Pass' THEN 1 ELSE 0 END) AS passed_count,
                 SUM(CASE WHEN result = 'Fail' THEN 1 ELSE 0 END) AS failed_count
-            FROM Quality_Check
+            FROM quality_check
             WHERE batch_id = %s AND inspection_type = 'Finished Good'
         """, (resolved_batch_id,))
         quality_counts = cur.fetchone()
@@ -130,8 +130,8 @@ def get_pending_qc_batches():
     with get_db_cursor() as cur:
         cur.execute("""
             SELECT fg.finished_good_id, fg.batch_id, p.product_name
-            FROM Finished_Goods fg
-            JOIN Products p ON fg.product_id = p.product_id
+            FROM finished_goods fg
+            JOIN products p ON fg.product_id = p.product_id
             WHERE fg.qc_status = 'Pending QC'
             ORDER BY fg.generation_date DESC
         """)

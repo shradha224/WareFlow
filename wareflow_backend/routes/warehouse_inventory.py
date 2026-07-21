@@ -23,7 +23,7 @@ def get_inventory():
         cur.execute("""
             SELECT component_id, part_name, description,
                    warehouse_stock, floor_stock, min_threshold
-            FROM Components
+            FROM components
             ORDER BY part_name
         """)
         components = cur.fetchall()

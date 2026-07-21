@@ -22,8 +22,8 @@ def get_transfers():
     with get_db_cursor() as cur:
         cur.execute("""
             SELECT t.transfer_id, t.component_id, c.part_name, t.dispatched_qty, t.transfer_status, t.dispatched_at, t.batch_id
-            FROM Material_Transfers t
-            JOIN Components c ON t.component_id = c.component_id
+            FROM material_transfers t
+            JOIN components c ON t.component_id = c.component_id
             WHERE t.transfer_status = 'In Transit'
             ORDER BY t.dispatched_at DESC
         """)
@@ -36,7 +36,7 @@ def get_transfers():
 @role_required("Worker", "Inventory Inspector")
 def verify_received(transfer_id):
     with get_db_cursor(commit=True) as cur:
-        cur.execute("SELECT * FROM Material_Transfers WHERE transfer_id = %s FOR UPDATE", (transfer_id,))
+        cur.execute("SELECT * FROM material_transfers WHERE transfer_id = %s FOR UPDATE", (transfer_id,))
         transfer = cur.fetchone()
         if not transfer:
             return jsonify({"error": f"No transfer with id {transfer_id}"}), 404
@@ -44,13 +44,13 @@ def verify_received(transfer_id):
             return jsonify({"error": "Transfer already marked as received"}), 409
 
         cur.execute("""
-            UPDATE Material_Transfers
+            UPDATE material_transfers
             SET transfer_status = 'Received', received_at = CURRENT_TIMESTAMP
             WHERE transfer_id = %s
         """, (transfer_id,))
 
         cur.execute("""
-            UPDATE Components SET floor_stock = floor_stock + %s
+            UPDATE components SET floor_stock = floor_stock + %s
             WHERE component_id = %s
         """, (transfer["dispatched_qty"], transfer["component_id"]))
 

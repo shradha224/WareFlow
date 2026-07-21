@@ -42,7 +42,7 @@ def check_userid():
             
         # Check pending registration payloads
         cur.execute("""
-            SELECT payload FROM Email_Verification 
+            SELECT payload FROM email_verification 
             WHERE purpose = 'Registration' AND expiry_time > NOW()
         """)
         rows = cur.fetchall()
@@ -97,7 +97,7 @@ def register():
             
         # Check pending registration payloads
         cur.execute("""
-            SELECT payload FROM Email_Verification 
+            SELECT payload FROM email_verification 
             WHERE purpose = 'Registration' AND expiry_time > NOW()
         """)
         rows = cur.fetchall()
@@ -141,10 +141,10 @@ def register():
     print("Saving OTP...", flush=True)
     with get_db_cursor(commit=True) as cur:
         # Delete old registration attempts for this email
-        cur.execute("DELETE FROM Email_Verification WHERE email = %s AND purpose = 'Registration'", (email,))
+        cur.execute("DELETE FROM email_verification WHERE email = %s AND purpose = 'Registration'", (email,))
         # Insert OTP + registration payload
         cur.execute("""
-            INSERT INTO Email_Verification (email, otp, expiry_time, purpose, payload)
+            INSERT INTO email_verification (email, otp, expiry_time, purpose, payload)
             VALUES (%s, %s, %s, 'Registration', %s)
         """, (email, otp, expiry_time, json.dumps(payload)))
     
@@ -169,7 +169,7 @@ def send_registration_otp():
     print("Saving OTP...", flush=True)
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
-            SELECT id, payload FROM Email_Verification 
+            SELECT id, payload FROM email_verification 
             WHERE email = %s AND purpose = 'Registration'
         """, (email,))
         row = cur.fetchone()
@@ -184,7 +184,7 @@ def send_registration_otp():
         expiry_time = datetime.datetime.now() + datetime.timedelta(minutes=10)
         
         cur.execute("""
-            UPDATE Email_Verification 
+            UPDATE email_verification 
             SET otp = %s, expiry_time = %s 
             WHERE id = %s
         """, (otp, expiry_time, row["id"]))
@@ -206,7 +206,7 @@ def verify_registration():
         
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
-            SELECT id, otp, expiry_time, payload FROM Email_Verification 
+            SELECT id, otp, expiry_time, payload FROM email_verification 
             WHERE email = %s AND purpose = 'Registration'
         """, (email,))
         row = cur.fetchone()
@@ -242,7 +242,7 @@ def verify_registration():
             ))
             
             # Clean up verification entry
-            cur.execute("DELETE FROM Email_Verification WHERE email = %s", (email,))
+            cur.execute("DELETE FROM email_verification WHERE email = %s", (email,))
             print("User verification completed successfully. User inserted to database.", flush=True)
             
         except Exception as e:
@@ -280,11 +280,11 @@ def send_reset_otp():
         
         print("Saving OTP...", flush=True)
         # Delete old reset OTPs
-        cur.execute("DELETE FROM Email_Verification WHERE email = %s AND purpose = 'Password Reset'", (email,))
+        cur.execute("DELETE FROM email_verification WHERE email = %s AND purpose = 'Password Reset'", (email,))
         
         # Save new reset OTP
         cur.execute("""
-            INSERT INTO Email_Verification (email, otp, expiry_time, purpose)
+            INSERT INTO email_verification (email, otp, expiry_time, purpose)
             VALUES (%s, %s, %s, 'Password Reset')
         """, (email, otp, expiry_time))
         
@@ -313,7 +313,7 @@ def reset_password():
         
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
-            SELECT id, otp, expiry_time FROM Email_Verification 
+            SELECT id, otp, expiry_time FROM email_verification 
             WHERE email = %s AND purpose = 'Password Reset'
         """, (email,))
         row = cur.fetchone()
@@ -335,7 +335,7 @@ def reset_password():
         cur.execute("UPDATE users SET password = %s WHERE email = %s", (hashed_pwd, email))
         
         # Clean up verification entry
-        cur.execute("DELETE FROM Email_Verification WHERE email = %s", (email,))
+        cur.execute("DELETE FROM email_verification WHERE email = %s", (email,))
         
     print("Password reset successfully. Password updated in database.", flush=True)
     return jsonify({"message": "Password reset successful! You can now log in."}), 200

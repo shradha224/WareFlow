@@ -36,14 +36,14 @@ def low_stock_detection():
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
             SELECT component_id, part_name, warehouse_stock, floor_stock, min_threshold
-            FROM Components
+            FROM components
             WHERE (warehouse_stock + floor_stock) < min_threshold
         """)
         low_stock_components = cur.fetchall()
 
         for comp in low_stock_components:
             cur.execute("""
-                SELECT request_id FROM Material_Requests
+                SELECT request_id FROM material_requests
                 WHERE component_id = %s AND status = 'Pending'
             """, (comp["component_id"],))
             if cur.fetchone():
@@ -51,7 +51,7 @@ def low_stock_detection():
 
             shortfall = comp["min_threshold"] - (comp["warehouse_stock"] + comp["floor_stock"])
             cur.execute("""
-                INSERT INTO Material_Requests (component_id, requested_qty, status)
+                INSERT INTO material_requests (component_id, requested_qty, status)
                 VALUES (%s, %s, 'Pending')
             """, (comp["component_id"], shortfall))
             alerts_created.append({
@@ -81,7 +81,7 @@ def delay_detection():
         cur.execute("""
             SELECT stage_id, batch_id, stage_name, target_hours, start_timestamp,
                    TIMESTAMPDIFF(SECOND, start_timestamp, NOW()) / 3600.0 AS elapsed_hours
-            FROM Batch_Stages
+            FROM batch_stages
             WHERE start_timestamp IS NOT NULL AND end_timestamp IS NULL
         """)
         in_progress_stages = cur.fetchall()
@@ -92,7 +92,7 @@ def delay_detection():
             delay_hours = max(0.0, elapsed_hours - target_hours)
 
             cur.execute("""
-                UPDATE Batch_Stages
+                UPDATE batch_stages
                 SET actual_hours = %s, delayed_by = %s
                 WHERE stage_id = %s
             """, (round(elapsed_hours, 2), delay_hours, stage["stage_id"]))
@@ -121,15 +121,15 @@ def batch_completion():
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
             SELECT pb.batch_id, p.product_name, pb.target_qty, pb.completed_qty
-            FROM Production_Batches pb
-            JOIN Products p ON pb.product_id = p.product_id
+            FROM production_batches pb
+            JOIN products p ON pb.product_id = p.product_id
             WHERE pb.completed_qty >= pb.target_qty AND pb.status != 'Complete'
         """)
         candidates = cur.fetchall()
 
         for batch in candidates:
             cur.execute("""
-                UPDATE Production_Batches SET status = 'Complete' WHERE batch_id = %s
+                UPDATE production_batches SET status = 'Complete' WHERE batch_id = %s
             """, (batch["batch_id"],))
             completed_batches.append(batch)
 
@@ -145,7 +145,7 @@ def _generate_finished_good_id() -> str:
 
 def finished_good_generation():
     """
-    For batches that are Complete but don't yet have a Finished_Goods
+    For batches that are Complete but don't yet have a finished_goods
     record, generates a Finished Good ID and moves the item into QC
     (qc_status = 'Pending QC'). Intended to run right after
     batch_completion() in the same job cycle.
@@ -154,9 +154,9 @@ def finished_good_generation():
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
             SELECT pb.batch_id, p.product_name, pb.product_id
-            FROM Production_Batches pb
-            JOIN Products p ON pb.product_id = p.product_id
-            LEFT JOIN Finished_Goods fg ON fg.batch_id = pb.batch_id
+            FROM production_batches pb
+            JOIN products p ON pb.product_id = p.product_id
+            LEFT JOIN finished_goods fg ON fg.batch_id = pb.batch_id
             WHERE pb.status = 'Complete' AND fg.finished_good_id IS NULL
         """)
         batches_needing_fg = cur.fetchall()
@@ -170,7 +170,7 @@ def finished_good_generation():
 
             finished_good_id = _generate_finished_good_id()
             cur.execute("""
-                INSERT INTO Finished_Goods (finished_good_id, batch_id, product_id, qc_status)
+                INSERT INTO finished_goods (finished_good_id, batch_id, product_id, qc_status)
                 VALUES (%s, %s, %s, 'Pending QC')
             """, (finished_good_id, batch_id, batch["product_id"]))
             generated.append({
@@ -201,8 +201,8 @@ def demand_prediction(lookback_days: int = 30, forecast_days: int = 7):
 
         cur.execute("""
             SELECT pb.product_id, DATE(fg.generation_date) AS completion_date, SUM(pb.completed_qty) AS daily_qty
-            FROM Finished_Goods fg
-            JOIN Production_Batches pb ON fg.batch_id = pb.batch_id
+            FROM finished_goods fg
+            JOIN production_batches pb ON fg.batch_id = pb.batch_id
             WHERE fg.generation_date >= (CURRENT_DATE - INTERVAL %s DAY)
             GROUP BY pb.product_id, DATE(fg.generation_date)
         """, (lookback_days,))
@@ -213,7 +213,7 @@ def demand_prediction(lookback_days: int = 30, forecast_days: int = 7):
             usage_by_product.setdefault(row["product_id"], []).append(row["daily_qty"])
 
         # Fetch all products to ensure every product gets predicted
-        cur.execute("SELECT product_id FROM Products")
+        cur.execute("SELECT product_id FROM products")
         all_products = [p["product_id"] for p in cur.fetchall()]
 
         today = datetime.date.today()
@@ -252,11 +252,11 @@ def demand_prediction(lookback_days: int = 30, forecast_days: int = 7):
 
 def cleanup_expired_otps():
     """
-    Background job to delete expired OTP records from Email_Verification table.
+    Background job to delete expired OTP records from email_verification table.
     """
     deleted_count = 0
     with get_db_cursor(commit=True) as cur:
-        cur.execute("DELETE FROM Email_Verification WHERE expiry_time < NOW()")
+        cur.execute("DELETE FROM email_verification WHERE expiry_time < NOW()")
         deleted_count = cur.rowcount
     return {"deleted_expired_otps_count": deleted_count}
 

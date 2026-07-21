@@ -88,7 +88,7 @@ async function loadProductionRequests() {
                         </td>
                         <td>
                             ${canDispatch 
-                                ? `<button class="dispatch-btn primary-btn" onclick="dispatchComponents('${batch.batch_id}')">Dispatch</button>`
+                                ? `<button class="dispatch-btn primary-btn" onclick="dispatchcomponents('${batch.batch_id}')">Dispatch</button>`
                                 : `<button class="dispatch-btn primary-btn" disabled style="background: #ccc; cursor: not-allowed;">Dispatched</button>`
                             }
                         </td>
@@ -123,7 +123,7 @@ window.approveRequest = async function(requestId) {
     }
 };
 
-window.dispatchComponents = async function(batchId) {
+window.dispatchcomponents = async function(batchId) {
     try {
         const response = await fetch(`http://localhost:5000/api/batches/${batchId}/dispatch`, {
             method: "POST",

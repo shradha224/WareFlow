@@ -37,7 +37,7 @@ function replaceComponentInputWithSelect() {
     }
 }
 
-async function loadComponentsForBatch(batchId) {
+async function loadcomponentsForBatch(batchId) {
     const select = document.getElementById("componentId");
     if (!select) return;
     select.innerHTML = '<option value="">Select Component</option>';
@@ -131,7 +131,7 @@ function renderBatchSelector(batches) {
         if (index === 0) {
             btn.className += " active";
             selectedBatchId = batch.batch_id;
-            loadComponentsForBatch(batch.batch_id);
+            loadcomponentsForBatch(batch.batch_id);
             loadStagesForBatch(batch.batch_id);
         }
         btn.dataset.batch = batch.batch_id;
@@ -140,7 +140,7 @@ function renderBatchSelector(batches) {
             document.querySelectorAll(".batch-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             selectedBatchId = batch.batch_id;
-            loadComponentsForBatch(batch.batch_id);
+            loadcomponentsForBatch(batch.batch_id);
             loadStagesForBatch(batch.batch_id);
             const progressEl = document.getElementById("consumption-progress");
             if (progressEl) progressEl.innerHTML = "";

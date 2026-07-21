@@ -25,9 +25,9 @@ def get_reports():
         # 1. Average Batch Completion Time
         cur.execute("""
             SELECT AVG(TIMESTAMPDIFF(SECOND, pb.created_at, qc.checking_date) / 3600.0) AS avg_hours
-            FROM Production_Batches pb
-            JOIN Finished_Goods fg ON pb.batch_id = fg.batch_id
-            JOIN Quality_Check qc ON fg.finished_good_id = qc.finished_good_id
+            FROM production_batches pb
+            JOIN finished_goods fg ON pb.batch_id = fg.batch_id
+            JOIN quality_check qc ON fg.finished_good_id = qc.finished_good_id
             WHERE fg.qc_status = 'Passed'
               AND qc.inspection_type = 'Finished Good'
               AND qc.result = 'Pass'
@@ -38,13 +38,13 @@ def get_reports():
         # 2. Average Stage Transition Time
         cur.execute("""
             SELECT AVG(TIMESTAMPDIFF(SECOND, start_timestamp, end_timestamp) / 3600.0) AS avg_hours
-            FROM Batch_Stages
+            FROM batch_stages
             WHERE status = 'Complete'
               AND start_timestamp IS NOT NULL
               AND end_timestamp IS NOT NULL
               AND stage_id NOT IN (
                   SELECT MIN(stage_id)
-                  FROM Batch_Stages
+                  FROM batch_stages
                   GROUP BY batch_id
               )
         """)
@@ -54,13 +54,13 @@ def get_reports():
         # 3. Average Final QC Time
         cur.execute("""
             SELECT AVG(TIMESTAMPDIFF(SECOND, start_timestamp, end_timestamp) / 3600.0) AS avg_hours
-            FROM Batch_Stages
+            FROM batch_stages
             WHERE status = 'Complete'
               AND start_timestamp IS NOT NULL
               AND end_timestamp IS NOT NULL
               AND stage_id IN (
                   SELECT MAX(stage_id)
-                  FROM Batch_Stages
+                  FROM batch_stages
                   GROUP BY batch_id
               )
         """)
@@ -77,9 +77,9 @@ def get_reports():
         # 4. Production Completed Analytics Count (QC Result = PASS)
         cur.execute("""
             SELECT COALESCE(SUM(pb.target_qty), 0) AS completed_count
-            FROM Production_Batches pb
-            JOIN Finished_Goods fg ON pb.batch_id = fg.batch_id
-            JOIN Quality_Check qc ON fg.finished_good_id = qc.finished_good_id
+            FROM production_batches pb
+            JOIN finished_goods fg ON pb.batch_id = fg.batch_id
+            JOIN quality_check qc ON fg.finished_good_id = qc.finished_good_id
             WHERE fg.qc_status = 'Passed'
               AND qc.inspection_type = 'Finished Good'
               AND qc.result = 'Pass'
@@ -94,7 +94,7 @@ def get_reports():
                 bs.target_hours, 
                 bs.start_timestamp, 
                 bs.end_timestamp
-            FROM Batch_Stages bs
+            FROM batch_stages bs
             WHERE bs.end_timestamp IS NOT NULL AND bs.start_timestamp IS NOT NULL
             ORDER BY bs.end_timestamp DESC
         """)
@@ -122,7 +122,7 @@ def get_reports():
                 COALESCE(SUM(CASE WHEN result = 'Pass' THEN 1 ELSE 0 END), 0) AS passed,
                 COALESCE(SUM(CASE WHEN result = 'Fail' THEN 1 ELSE 0 END), 0) AS failed,
                 COUNT(*) AS total
-            FROM Quality_Check
+            FROM quality_check
             WHERE inspection_type = 'Raw Material'
         """)
         rm_row = cur.fetchone()
@@ -137,7 +137,7 @@ def get_reports():
                 COALESCE(SUM(CASE WHEN result = 'Pass' THEN 1 ELSE 0 END), 0) AS passed,
                 COALESCE(SUM(CASE WHEN result = 'Fail' THEN 1 ELSE 0 END), 0) AS failed,
                 COUNT(*) AS total
-            FROM Quality_Check
+            FROM quality_check
             WHERE inspection_type = 'Finished Good'
         """)
         fg_row = cur.fetchone()
@@ -149,7 +149,7 @@ def get_reports():
         # 7. Average delay (hours) across completed stages
         cur.execute("""
             SELECT AVG(delayed_by) AS avg_delay
-            FROM Batch_Stages
+            FROM batch_stages
             WHERE status = 'Complete'
         """)
         row_delay = cur.fetchone()
@@ -160,17 +160,17 @@ def get_reports():
             SELECT log_type, ref_id, detail, event_time FROM (
                 (SELECT 'Material Request' AS log_type, request_id AS ref_id,
                         status AS detail, created_at AS event_time
-                  FROM Material_Requests)
+                  FROM material_requests)
                 UNION ALL
                 (SELECT 'Batch Stage', stage_id, CONCAT(stage_name, ' - ', status),
                         COALESCE(end_timestamp, start_timestamp)
-                  FROM Batch_Stages)
+                  FROM batch_stages)
                 UNION ALL
                 (SELECT 'Quality Inspection', inspection_id, result, checking_date
-                  FROM Quality_Check)
+                  FROM quality_check)
                 UNION ALL
                 (SELECT 'Material Transfer', transfer_id, transfer_status, dispatched_at
-                  FROM Material_Transfers)
+                  FROM material_transfers)
             ) AS combined_logs
             ORDER BY event_time DESC
             LIMIT %s

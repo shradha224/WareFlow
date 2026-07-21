@@ -84,7 +84,7 @@ Submits a new raw material request (status = Pending).
 ## 7. Warehouse Stock Control
 
 ### `POST /api/stock/dispatch`
-Dispatches material from warehouse stock, creates a Material_Transfers record.
+Dispatches material from warehouse stock, creates a material_transfers record.
 - **Auth:** Supervisor, Inventory Inspector
 - **Body:** `{ "component_id": "string", "dispatched_qty": number }`
 - **Response 201:** `{ message, transfer_id, component_id, dispatched_qty, transfer_status }`

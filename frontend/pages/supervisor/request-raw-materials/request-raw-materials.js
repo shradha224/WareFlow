@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    loadComponents();
+    loadcomponents();
 
     document
         .getElementById("request-material-form")
@@ -12,11 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 });
 
-async function loadComponents() {
+async function loadcomponents() {
     try {
         const data = await apiRequest("/components");
 
-        console.log("Components:", data);
+        console.log("components:", data);
 
         const materialSelect = document.getElementById("material");
 

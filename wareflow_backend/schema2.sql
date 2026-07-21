@@ -370,11 +370,11 @@ CREATE TABLE `users` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `Email_Verification`
+-- Table structure for table `email_verification`
 --
 
-DROP TABLE IF EXISTS `Email_Verification`;
-CREATE TABLE `Email_Verification` (
+DROP TABLE IF EXISTS `email_verification`;
+CREATE TABLE `email_verification` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(100) NOT NULL,
   `otp` varchar(6) NOT NULL,
@@ -386,11 +386,11 @@ CREATE TABLE `Email_Verification` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
--- Table structure for table `Product_Workflow`
+-- Table structure for table `product_workflow`
 --
 
-DROP TABLE IF EXISTS `Product_Workflow`;
-CREATE TABLE `Product_Workflow` (
+DROP TABLE IF EXISTS `product_workflow`;
+CREATE TABLE `product_workflow` (
   `product_id` varchar(50) NOT NULL,
   `stage_name` varchar(100) NOT NULL,
   `sequence_order` int(11) NOT NULL,

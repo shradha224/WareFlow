@@ -29,13 +29,13 @@ def supervisor_dashboard():
         # Active alerts: components under their minimum threshold
         cur.execute("""
             SELECT component_id, part_name, warehouse_stock, floor_stock, min_threshold
-            FROM Components
+            FROM components
             WHERE (warehouse_stock + floor_stock) < min_threshold
         """)
         low_stock_alerts = cur.fetchall()
 
         # Pending material requests
-        cur.execute("SELECT COUNT(*) AS pending_count FROM Material_Requests WHERE status = 'Pending'")
+        cur.execute("SELECT COUNT(*) AS pending_count FROM material_requests WHERE status = 'Pending'")
         pending_requests = cur.fetchone()["pending_count"]
 
         # Finished Goods QC only
@@ -43,7 +43,7 @@ def supervisor_dashboard():
             SELECT
                 SUM(CASE WHEN result = 'Pass' THEN 1 ELSE 0 END) AS passed,
                 COUNT(*) AS total
-            FROM Quality_Check
+            FROM quality_check
             WHERE inspection_type = 'Finished Good'
         """)
         qc_row = cur.fetchone()
@@ -58,8 +58,8 @@ def supervisor_dashboard():
         # Batch progress: completed_qty vs target_qty for active batches
         cur.execute("""
             SELECT pb.batch_id, p.product_name, pb.product_id, pb.target_qty, pb.completed_qty, pb.status
-            FROM Production_Batches pb
-            JOIN Products p ON pb.product_id = p.product_id
+            FROM production_batches pb
+            JOIN products p ON pb.product_id = p.product_id
             WHERE pb.status != 'Complete'
         """)
         active_progress_batches = cur.fetchall()
@@ -81,7 +81,7 @@ def supervisor_dashboard():
             
             cur.execute("""
                 SELECT stage_name 
-                FROM Batch_Stages 
+                FROM batch_stages 
                 WHERE batch_id = %s
             """, (batch_id,))
             all_stages = cur.fetchall()
@@ -122,7 +122,7 @@ def supervisor_dashboard():
         # Get all active batches
         cur.execute("""
             SELECT pb.batch_id, pb.product_id, pb.target_qty 
-            FROM Production_Batches pb
+            FROM production_batches pb
             WHERE pb.status != 'Complete'
         """)
         active_batches = cur.fetchall()
@@ -139,7 +139,7 @@ def supervisor_dashboard():
             cur.execute("""
                 SELECT jom.component_id, jom.quantity_required, c.part_name
                 FROM junction_of_materials jom
-                JOIN Components c ON jom.component_id = c.component_id
+                JOIN components c ON jom.component_id = c.component_id
                 WHERE jom.product_id = %s
             """, (product_id,))
             bom_items = cur.fetchall()
@@ -147,7 +147,7 @@ def supervisor_dashboard():
             # Get production stages for this batch
             cur.execute("""
                 SELECT stage_name, status, stage_id 
-                FROM Batch_Stages 
+                FROM batch_stages 
                 WHERE batch_id = %s 
                 ORDER BY stage_id ASC
             """, (batch_id,))
@@ -195,7 +195,7 @@ def supervisor_dashboard():
         cur.execute("""
             SELECT p.product_name AS part_name, dp.predicted_demand_qty
             FROM demand_predictions dp
-            JOIN Products p ON dp.product_id = p.product_id
+            JOIN products p ON dp.product_id = p.product_id
         """)
         predicted_rows = cur.fetchall()
 
@@ -210,8 +210,8 @@ def supervisor_dashboard():
         from completion_helper import is_batch_production_complete
         cur.execute("""
             SELECT pb.batch_id, pb.product_id 
-            FROM Production_Batches pb
-            JOIN Finished_Goods fg ON pb.batch_id = fg.batch_id
+            FROM production_batches pb
+            JOIN finished_goods fg ON pb.batch_id = fg.batch_id
             WHERE fg.qc_status = 'Pending QC'
         """)
         candidates = cur.fetchall()
@@ -220,7 +220,7 @@ def supervisor_dashboard():
         for b in candidates:
             if is_batch_production_complete(cur, b["batch_id"]):
                 # Retrieve product name
-                cur.execute("SELECT product_name FROM Products WHERE product_id = %s", (b["product_id"],))
+                cur.execute("SELECT product_name FROM products WHERE product_id = %s", (b["product_id"],))
                 p_row = cur.fetchone()
                 p_name = p_row["product_name"] if p_row else "Product"
                 
@@ -275,7 +275,7 @@ def place_order_from_alert():
     with get_db_cursor(commit=True) as cur:
         cur.execute("""
             SELECT component_id, warehouse_stock, floor_stock, min_threshold 
-            FROM Components WHERE component_id = %s FOR UPDATE
+            FROM components WHERE component_id = %s FOR UPDATE
         """, (component_id,))
         comp = cur.fetchone()
         if not comp:
@@ -291,7 +291,7 @@ def place_order_from_alert():
             recommended_qty = comp["min_threshold"]
 
         cur.execute("""
-            INSERT INTO Material_Requests (component_id, requested_qty, status)
+            INSERT INTO material_requests (component_id, requested_qty, status)
             VALUES (%s, %s, 'Pending')
         """, (component_id, recommended_qty))
         request_id = cur.lastrowid

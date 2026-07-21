@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    loadProducts();
+    loadproducts();
 
     document
         .getElementById("initialize-btn")
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 let currentBatchId = null;
 let stageList = [];
 
-async function loadProducts() {
+async function loadproducts() {
     try {
         const products = await apiRequest("/products");
 

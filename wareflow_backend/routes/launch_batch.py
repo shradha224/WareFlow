@@ -11,7 +11,7 @@ Endpoints:
 
   POST /api/batches/<batch_id>/stages
        { stages: [ { stage_name, target_hours }, ... ] }
-       -> Create/update Batch_Stages records and store target values.
+       -> Create/update batch_stages records and store target values.
 """
 
 import uuid
@@ -37,7 +37,7 @@ def get_products():
     with get_db_cursor() as cur:
         cur.execute("""
             SELECT product_name
-            FROM Products
+            FROM products
             ORDER BY product_name
         """)
         products = cur.fetchall()
@@ -50,8 +50,8 @@ def get_active_batches():
     with get_db_cursor() as cur:
         cur.execute("""
             SELECT pb.batch_id, p.product_name, pb.target_qty, pb.completed_qty, pb.status, pb.created_at
-            FROM Production_Batches pb
-            JOIN Products p ON pb.product_id = p.product_id
+            FROM production_batches pb
+            JOIN products p ON pb.product_id = p.product_id
             WHERE pb.status != 'Complete'
             ORDER BY pb.created_at DESC
         """)
@@ -72,14 +72,14 @@ def initialize_batch():
     batch_id = _generate_batch_id()
 
     with get_db_cursor(commit=True) as cur:
-        cur.execute("SELECT product_id FROM Products WHERE product_name = %s", (product_name,))
+        cur.execute("SELECT product_id FROM products WHERE product_name = %s", (product_name,))
         product_row = cur.fetchone()
         if not product_row:
             return jsonify({"error": f"Unknown product '{product_name}'"}), 404
         product_id = product_row["product_id"]
 
         cur.execute("""
-            INSERT INTO Production_Batches (batch_id, product_id, target_qty, completed_qty, status)
+            INSERT INTO production_batches (batch_id, product_id, target_qty, completed_qty, status)
             VALUES (%s, %s, %s, 0, 'Initialized')
         """, (batch_id, product_id, target_qty))
 
@@ -96,7 +96,7 @@ def initialize_batch():
             # Get warehouse stock for this component
             cur.execute("""
                 SELECT warehouse_stock, floor_stock, min_threshold
-                FROM Components
+                FROM components
                 WHERE component_id = %s
                 FOR UPDATE
             """, (item["component_id"],))
@@ -105,14 +105,14 @@ def initialize_batch():
             if not comp or comp["warehouse_stock"] < req_qty:
                 # Case B: Insufficient warehouse stock -> Generate pending material request
                 cur.execute("""
-                    INSERT INTO Material_Requests (component_id, requested_qty, status, batch_id)
+                    INSERT INTO material_requests (component_id, requested_qty, status, batch_id)
                     VALUES (%s, %s, 'Pending', %s)
                 """, (item["component_id"], req_qty, batch_id))
 
         # Stage Initialization: Retrieve Product Workflow or fallback to defaults
         cur.execute("""
             SELECT stage_name 
-            FROM Product_Workflow 
+            FROM product_workflow 
             WHERE product_id = %s 
             ORDER BY sequence_order ASC
         """, (product_id,))
@@ -136,7 +136,7 @@ def initialize_batch():
 
         for stage_name, target_hours, status, start_ts in stages_to_init:
             sql = f"""
-                INSERT INTO Batch_Stages (batch_id, stage_name, target_hours, target_qty, status, start_timestamp)
+                INSERT INTO batch_stages (batch_id, stage_name, target_hours, target_qty, status, start_timestamp)
                 VALUES (%s, %s, %s, 0, %s, {start_ts})
             """
             cur.execute(sql, (batch_id, stage_name, target_hours, status))
@@ -163,7 +163,7 @@ def set_batch_stages(batch_id):
         return jsonify({"error": "stages must be a non-empty list of {stage_name, target_hours}"}), 400
 
     with get_db_cursor(commit=True) as cur:
-        cur.execute("SELECT batch_id FROM Production_Batches WHERE batch_id = %s", (batch_id,))
+        cur.execute("SELECT batch_id FROM production_batches WHERE batch_id = %s", (batch_id,))
         if not cur.fetchone():
             return jsonify({"error": f"Unknown batch_id '{batch_id}'"}), 404
 
@@ -178,20 +178,20 @@ def set_batch_stages(batch_id):
             stage_name_db = STAGE_MAP.get(stage_name.lower(), stage_name)
 
             cur.execute("""
-                SELECT stage_id FROM Batch_Stages
+                SELECT stage_id FROM batch_stages
                 WHERE batch_id = %s AND stage_name = %s
             """, (batch_id, stage_name_db))
             existing = cur.fetchone()
 
             if existing:
                 cur.execute("""
-                    UPDATE Batch_Stages SET target_hours = %s, target_qty = %s
+                    UPDATE batch_stages SET target_hours = %s, target_qty = %s
                     WHERE stage_id = %s
                 """, (target_hours, target_qty, existing["stage_id"]))
                 created_or_updated.append({"stage_id": existing["stage_id"], "stage_name": stage_name_db, "action": "updated"})
             else:
                 cur.execute("""
-                    INSERT INTO Batch_Stages (batch_id, stage_name, target_hours, target_qty, status)
+                    INSERT INTO batch_stages (batch_id, stage_name, target_hours, target_qty, status)
                     VALUES (%s, %s, %s, %s, 'In Progress')
                 """, (batch_id, stage_name_db, target_hours, target_qty))
                 created_or_updated.append({"stage_id": cur.lastrowid, "stage_name": stage_name_db, "action": "created"})
@@ -203,13 +203,13 @@ def set_batch_stages(batch_id):
 @login_required
 def get_batch_stages(batch_id):
     with get_db_cursor() as cur:
-        cur.execute("SELECT batch_id FROM Production_Batches WHERE batch_id = %s", (batch_id,))
+        cur.execute("SELECT batch_id FROM production_batches WHERE batch_id = %s", (batch_id,))
         if not cur.fetchone():
             return jsonify({"error": f"Unknown batch_id '{batch_id}'"}), 404
 
         cur.execute("""
             SELECT stage_id, stage_name, target_hours, target_qty, status
-            FROM Batch_Stages
+            FROM batch_stages
             WHERE batch_id = %s
             ORDER BY stage_id ASC
         """, (batch_id,))
@@ -238,12 +238,12 @@ def add_new_product():
     product_id = f"PROD-{uuid.uuid4().hex[:8].upper()}"
 
     with get_db_cursor(commit=True) as cur:
-        cur.execute("SELECT product_id FROM Products WHERE product_name = %s", (product_name,))
+        cur.execute("SELECT product_id FROM products WHERE product_name = %s", (product_name,))
         if cur.fetchone():
             return jsonify({"error": f"Product with name '{product_name}' already exists"}), 409
 
         cur.execute("""
-            INSERT INTO Products (product_id, product_name, description)
+            INSERT INTO products (product_id, product_name, description)
             VALUES (%s, %s, %s)
         """, (product_id, product_name, description))
 
@@ -262,7 +262,7 @@ def add_new_product():
             for stage in stages:
                 if isinstance(stage, str) and stage.strip():
                     cur.execute("""
-                        INSERT INTO Product_Workflow (product_id, stage_name, sequence_order)
+                        INSERT INTO product_workflow (product_id, stage_name, sequence_order)
                         VALUES (%s, %s, %s)
                     """, (product_id, stage.strip(), seq_order))
                     seq_order += 1
