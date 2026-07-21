@@ -22,50 +22,104 @@ def get_reports():
     log_limit = int(request.args.get("log_limit", 50))
 
     with get_db_cursor() as cur:
-        # 1. Average Batch Completion Time
+        # 1. Average Batch Completion Time (avoiding duplicate QC count)
         cur.execute("""
             SELECT AVG(TIMESTAMPDIFF(SECOND, pb.created_at, qc.checking_date) / 3600.0) AS avg_hours
             FROM production_batches pb
             JOIN finished_goods fg ON pb.batch_id = fg.batch_id
-            JOIN quality_check qc ON fg.finished_good_id = qc.finished_good_id
+            JOIN (
+                SELECT finished_good_id, MIN(checking_date) AS checking_date
+                FROM quality_check
+                WHERE inspection_type = 'Finished Good' AND result = 'Pass'
+                GROUP BY finished_good_id
+            ) qc ON fg.finished_good_id = qc.finished_good_id
             WHERE fg.qc_status = 'Passed'
-              AND qc.inspection_type = 'Finished Good'
-              AND qc.result = 'Pass'
         """)
         row_completion = cur.fetchone()
         avg_completion_hours = float(row_completion["avg_hours"]) if row_completion and row_completion["avg_hours"] is not None else 0.0
 
-        # 2. Average Stage Transition Time
+        # Fetch all completed stages to compute transition/QC/delay metrics in Python
         cur.execute("""
-            SELECT AVG(TIMESTAMPDIFF(SECOND, start_timestamp, end_timestamp) / 3600.0) AS avg_hours
-            FROM batch_stages
-            WHERE status = 'Complete'
-              AND start_timestamp IS NOT NULL
-              AND end_timestamp IS NOT NULL
-              AND stage_id NOT IN (
-                  SELECT MIN(stage_id)
-                  FROM batch_stages
-                  GROUP BY batch_id
-              )
+            SELECT 
+                bs.stage_id,
+                bs.stage_name, 
+                bs.batch_id,
+                bs.target_hours, 
+                bs.start_timestamp, 
+                bs.end_timestamp,
+                pb.created_at AS batch_created_at
+            FROM batch_stages bs
+            JOIN production_batches pb ON bs.batch_id = pb.batch_id
+            WHERE bs.status = 'Complete'
+            ORDER BY bs.stage_id ASC
         """)
-        row_transition = cur.fetchone()
-        avg_transition_hours = float(row_transition["avg_hours"]) if row_transition and row_transition["avg_hours"] is not None else 0.0
+        all_completed_stages = cur.fetchall()
 
-        # 3. Average Final QC Time
-        cur.execute("""
-            SELECT AVG(TIMESTAMPDIFF(SECOND, start_timestamp, end_timestamp) / 3600.0) AS avg_hours
-            FROM batch_stages
-            WHERE status = 'Complete'
-              AND start_timestamp IS NOT NULL
-              AND end_timestamp IS NOT NULL
-              AND stage_id IN (
-                  SELECT MAX(stage_id)
-                  FROM batch_stages
-                  GROUP BY batch_id
-              )
-        """)
-        row_qc = cur.fetchone()
-        avg_qc_hours = float(row_qc["avg_hours"]) if row_qc and row_qc["avg_hours"] is not None else 0.0
+        # Group stages by batch to identify min and max stage_ids and calculate actual start timestamps
+        batch_stages_map = {}
+        for stage in all_completed_stages:
+            bid = stage["batch_id"]
+            if bid not in batch_stages_map:
+                batch_stages_map[bid] = []
+            batch_stages_map[bid].append(stage)
+
+        transition_hours_list = []
+        qc_hours_list = []
+        all_delays_list = []
+        delay_logs = []
+
+        for bid, stages in batch_stages_map.items():
+            min_id = stages[0]["stage_id"]
+            max_id = stages[-1]["stage_id"]
+
+            for idx, stage in enumerate(stages):
+                start = stage["start_timestamp"]
+                end = stage["end_timestamp"]
+
+                if not start:
+                    if idx > 0:
+                        start = stages[idx-1]["end_timestamp"]
+                    if not start:
+                        start = stage["batch_created_at"]
+
+                if not end:
+                    continue
+                if not start:
+                    start = end
+
+                actual_hours = max(0.0, (end - start).total_seconds() / 3600.0)
+                target_hours = float(stage["target_hours"])
+                delay = actual_hours - target_hours
+
+                all_delays_list.append(max(0.0, delay))
+
+                if stage["stage_id"] == max_id:
+                    qc_hours_list.append(actual_hours)
+                
+                if stage["stage_id"] != min_id:
+                    transition_hours_list.append(actual_hours)
+
+                if delay > 0.0:
+                    delay_display = f"+{delay:.2f} hrs"
+                else:
+                    delay_display = "On Time"
+
+                delay_logs.append({
+                    "stage_name": f"{stage['stage_name']} ({bid})",
+                    "actual_time_elapsed": f"{actual_hours:.2f} hrs",
+                    "target_time": f"{target_hours:.2f} hrs",
+                    "delay_display": delay_display,
+                    "end_timestamp": end
+                })
+
+        # Sort delay logs by end_timestamp DESC
+        delay_logs.sort(key=lambda x: x["end_timestamp"], reverse=True)
+        for log in delay_logs:
+            log.pop("end_timestamp", None)
+
+        avg_transition_hours = sum(transition_hours_list) / len(transition_hours_list) if transition_hours_list else 0.0
+        avg_qc_hours = sum(qc_hours_list) / len(qc_hours_list) if qc_hours_list else 0.0
+        avg_delay_hours = sum(all_delays_list) / len(all_delays_list) if all_delays_list else 0.0
 
         # Populate stage_metrics expecting assembly, production, and qc
         stage_metrics = [
@@ -74,47 +128,14 @@ def get_reports():
             {"stage_name": "QC", "avg_elapsed": round(avg_qc_hours, 2), "target_hours": 0.0}
         ]
 
-        # 4. Production Completed Analytics Count (QC Result = PASS)
+        # 4. Production Completed Analytics Count (QC Result = PASS) using Finished Goods as single source of truth
         cur.execute("""
-            SELECT COALESCE(SUM(pb.target_qty), 0) AS completed_count
-            FROM production_batches pb
-            JOIN finished_goods fg ON pb.batch_id = fg.batch_id
-            JOIN quality_check qc ON fg.finished_good_id = qc.finished_good_id
+            SELECT COALESCE(SUM(pb.completed_qty), 0) AS completed_count
+            FROM finished_goods fg
+            JOIN production_batches pb ON fg.batch_id = pb.batch_id
             WHERE fg.qc_status = 'Passed'
-              AND qc.inspection_type = 'Finished Good'
-              AND qc.result = 'Pass'
         """)
         production_completed_count = int(cur.fetchone()["completed_count"])
-
-        # 5. Delay Detection logs batch-by-batch (Actual > Target)
-        cur.execute("""
-            SELECT 
-                bs.stage_name, 
-                bs.batch_id,
-                bs.target_hours, 
-                bs.start_timestamp, 
-                bs.end_timestamp
-            FROM batch_stages bs
-            WHERE bs.end_timestamp IS NOT NULL AND bs.start_timestamp IS NOT NULL
-            ORDER BY bs.end_timestamp DESC
-        """)
-        completed_stages = cur.fetchall()
-        
-        delay_logs = []
-        for stage in completed_stages:
-            actual_time_seconds = (stage["end_timestamp"] - stage["start_timestamp"]).total_seconds()
-            actual_time_hours = max(0.0, actual_time_seconds / 3600.0)
-            target_hours = float(stage["target_hours"])
-            delay = actual_time_hours - target_hours
-            
-            if delay > 0.0:
-                delay_display = f"+{delay:.2f} hrs"
-                delay_logs.append({
-                    "stage_name": f"{stage['stage_name']} ({stage['batch_id']})",
-                    "actual_time_elapsed": f"{actual_time_hours:.2f} hrs",
-                    "target_time": f"{target_hours:.2f} hrs",
-                    "delay_display": delay_display
-                })
 
         # 6. Average QC pass rate for Raw Materials only
         cur.execute("""
