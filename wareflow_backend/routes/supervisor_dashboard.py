@@ -98,7 +98,7 @@ def supervisor_dashboard():
                     total_required += req_qty
                     cur.execute("""
                         SELECT COALESCE(SUM(qty_used), 0) AS total
-                        FROM Component_Consumption
+                        FROM component_consumption
                         WHERE batch_id = %s AND component_id = %s AND stage_name = %s
                     """, (batch_id, comp_id, stage))
                     consumed = cur.fetchone()["total"] or 0
@@ -171,7 +171,7 @@ def supervisor_dashboard():
                 for stage in production_stages:
                     cur.execute("""
                         SELECT COALESCE(SUM(qty_used), 0) AS total
-                        FROM Component_Consumption
+                        FROM component_consumption
                         WHERE batch_id = %s AND component_id = %s AND stage_name = %s
                     """, (batch_id, comp_id, stage))
                     total_consumed = cur.fetchone()["total"] or 0
