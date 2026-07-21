@@ -13,7 +13,7 @@ function initializePage() {
 
 async function loadPendingQC() {
     try {
-        const response = await fetch("http://localhost:5000/api/qc/pending", {
+        const response = await fetch(API_BASE_URL + "/qc/pending", {
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
             }
@@ -57,7 +57,7 @@ async function loadPendingQC() {
 
 window.submitQC = async function(requestId, componentId, qtyInspected, result) {
     try {
-        const response = await fetch("http://localhost:5000/api/qc/component", {
+        const response = await fetch(API_BASE_URL + "/qc/component", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

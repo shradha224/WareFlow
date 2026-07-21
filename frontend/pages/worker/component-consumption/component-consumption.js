@@ -99,7 +99,7 @@ function registerEventListeners() {
 
 async function loadActiveBatches() {
     try {
-        const response = await fetch("http://localhost:5000/api/batches/active", {
+        const response = await fetch(API_BASE_URL + "/batches/active", {
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
             }
@@ -167,7 +167,7 @@ async function submitConsumption() {
     }
 
     try {
-        const response = await fetch("http://localhost:5000/api/consumption", {
+        const response = await fetch(API_BASE_URL + "/consumption", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

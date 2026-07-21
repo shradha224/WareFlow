@@ -33,7 +33,7 @@ function openAddItemPage() {
 
 async function loadInventory() {
     try {
-        const response = await fetch("http://localhost:5000/api/inventory", {
+        const response = await fetch(API_BASE_URL + "/inventory", {
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
             }

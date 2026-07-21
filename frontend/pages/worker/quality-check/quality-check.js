@@ -63,7 +63,7 @@ async function loadPendingQCBatches() {
     if (!select) return;
     select.innerHTML = '<option value="">Select Product ID</option>';
     try {
-        const response = await fetch("http://localhost:5000/api/qc/pending-batches", {
+        const response = await fetch(API_BASE_URL + "/qc/pending-batches", {
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
             }
@@ -123,7 +123,7 @@ async function submitQCResult(event) {
     }
 
     try {
-        const response = await fetch("http://localhost:5000/api/qc/finished-good", {
+        const response = await fetch(API_BASE_URL + "/qc/finished-good", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

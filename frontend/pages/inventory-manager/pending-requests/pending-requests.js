@@ -14,7 +14,7 @@ function initializePage() {
 
 async function loadPendingRequests() {
     try {
-        const response = await fetch("http://localhost:5000/api/material-requests", {
+        const response = await fetch(API_BASE_URL + "/material-requests", {
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
             }
@@ -55,7 +55,7 @@ async function loadPendingRequests() {
 
 async function loadProductionRequests() {
     try {
-        const response = await fetch("http://localhost:5000/api/batches/active", {
+        const response = await fetch(API_BASE_URL + "/batches/active", {
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
             }

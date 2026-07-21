@@ -31,7 +31,7 @@ async function submitProduct(event) {
     const min_threshold = Number(document.getElementById("threshold").value);
 
     try {
-        const response = await fetch("http://localhost:5000/api/inventory/items", {
+        const response = await fetch(API_BASE_URL + "/inventory/items", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

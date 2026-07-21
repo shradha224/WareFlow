@@ -39,7 +39,7 @@ function registerEventListeners() {
 
 async function loadcomponents() {
     try {
-        const response = await fetch("http://localhost:5000/api/components", {
+        const response = await fetch(API_BASE_URL + "/components", {
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
             }
@@ -205,7 +205,7 @@ async function submitProduct(event) {
     }
 
     try {
-        const response = await fetch("http://localhost:5000/api/products", {
+        const response = await fetch(API_BASE_URL + "/products", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

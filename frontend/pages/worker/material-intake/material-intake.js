@@ -13,7 +13,7 @@ function initializePage() {
 
 async function loadTransfers() {
     try {
-        const response = await fetch("http://localhost:5000/api/transfers", {
+        const response = await fetch(API_BASE_URL + "/transfers", {
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
             }
