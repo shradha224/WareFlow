@@ -101,16 +101,13 @@ def get_reports():
 
                 if delay > 0.0:
                     delay_display = f"+{delay:.2f} hrs"
-                else:
-                    delay_display = "On Time"
-
-                delay_logs.append({
-                    "stage_name": f"{stage['stage_name']} ({bid})",
-                    "actual_time_elapsed": f"{actual_hours:.2f} hrs",
-                    "target_time": f"{target_hours:.2f} hrs",
-                    "delay_display": delay_display,
-                    "end_timestamp": end
-                })
+                    delay_logs.append({
+                        "stage_name": f"{stage['stage_name']} ({bid})",
+                        "actual_time_elapsed": f"{actual_hours:.2f} hrs",
+                        "target_time": f"{target_hours:.2f} hrs",
+                        "delay_display": delay_display,
+                        "end_timestamp": end
+                    })
 
         # Sort delay logs by end_timestamp DESC
         delay_logs.sort(key=lambda x: x["end_timestamp"], reverse=True)

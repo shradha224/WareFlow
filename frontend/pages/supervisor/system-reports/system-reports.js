@@ -53,7 +53,7 @@ async function loadReports() {
                 `;
             });
         } else {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No completed stages logged.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 20px; font-weight: bold; color: #28a745; font-size: 1.1rem;">✅ No production delays detected.</td></tr>`;
         }
 
     } catch (error) {
