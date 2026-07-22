@@ -30,41 +30,43 @@
 }
 
 .password-requirements {
-    background: #F4F6F9;
-    border-radius: 12px;
-    padding: 16px 20px;
+    background: #FAFBFC;
+    border-radius: 16px;
+    padding: 18px 24px;
     margin-bottom: 24px;
-    border: 1px solid #E4E8EE;
+    border: 1.5px solid #E4E8EE;
+    opacity: 0;
+    transition: opacity 0.25s ease;
 }
 
-.password-requirements h3 {
-    font-size: 15px;
-    color: #333;
-    margin: 0 0 10px 0;
+.password-requirements.show {
+    opacity: 1;
+}
+
+.requirements-title {
+    font-size: 14px;
+    color: #5A6A85;
+    margin-bottom: 10px;
     font-weight: 600;
 }
 
-.password-requirements ul {
-    list-style: none;
-    padding: 0;
+.requirements-list {
+    list-style-type: disc;
+    padding-left: 20px;
     margin: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
 }
 
-.requirement {
-    font-size: 14px;
+.requirements-list li {
+    font-size: 13.5px;
+    color: #4A5568;
+    margin-bottom: 6px;
     font-weight: 500;
-    transition: color 0.25s ease;
 }
 
-.requirement.valid {
+.requirements-success {
     color: #2E7D32;
-}
-
-.requirement.invalid {
-    color: #C62828;
+    font-weight: 600;
+    font-size: 14px;
 }
 
 @media(max-width: 768px) {
@@ -80,9 +82,5 @@
     
     .form-group-full {
         grid-column: span 1;
-    }
-    
-    .password-requirements ul {
-        grid-template-columns: 1fr;
     }
 }

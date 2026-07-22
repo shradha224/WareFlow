@@ -27,6 +27,27 @@ document.addEventListener("DOMContentLoaded", () => {
     
     function validatePasswordRequirements() {
         const password = passwordInput.value;
+        const requirementsContainer = document.getElementById("passwordRequirements");
+        const statusTitle = document.getElementById("password-status-title");
+        const reqList = document.getElementById("requirements-list");
+        const successMsg = document.getElementById("password-success-msg");
+
+        if (!password) {
+            if (requirementsContainer) {
+                requirementsContainer.style.display = "none";
+                requirementsContainer.classList.remove("show");
+            }
+            validatePasswordMatch();
+            return false;
+        }
+
+        if (requirementsContainer) {
+            requirementsContainer.style.display = "block";
+            // trigger reflow/repaint to ensure transition plays
+            requirementsContainer.offsetHeight;
+            requirementsContainer.classList.add("show");
+        }
+
         const reqs = {
             length: password.length >= 8,
             upper: /[A-Z]/.test(password),
@@ -34,27 +55,43 @@ document.addEventListener("DOMContentLoaded", () => {
             number: /[0-9]/.test(password),
             special: /[^A-Za-z0-9]/.test(password)
         };
-        
-        updateRequirementUI("req-length", reqs.length, "Minimum 8 characters");
-        updateRequirementUI("req-upper", reqs.upper, "One uppercase letter");
-        updateRequirementUI("req-lower", reqs.lower, "One lowercase letter");
-        updateRequirementUI("req-number", reqs.number, "One number");
-        updateRequirementUI("req-special", reqs.special, "One special character");
-        
+
+        const ruleDetails = {
+            length: "req-length",
+            upper: "req-upper",
+            lower: "req-lower",
+            number: "req-number",
+            special: "req-special"
+        };
+
+        let allSatisfied = true;
+
+        for (const [key, satisfied] of Object.entries(reqs)) {
+            const elId = ruleDetails[key];
+            const li = document.getElementById(elId);
+            if (li) {
+                if (satisfied) {
+                    li.style.display = "none";
+                } else {
+                    li.style.display = "list-item";
+                    allSatisfied = false;
+                }
+            }
+        }
+
+        if (allSatisfied) {
+            if (statusTitle) statusTitle.style.display = "none";
+            if (reqList) reqList.style.display = "none";
+            if (successMsg) successMsg.style.display = "block";
+        } else {
+            if (statusTitle) statusTitle.style.display = "block";
+            if (reqList) reqList.style.display = "block";
+            if (successMsg) successMsg.style.display = "none";
+        }
+
         validatePasswordMatch();
         
-        return Object.values(reqs).every(val => val === true);
-    }
-    
-    function updateRequirementUI(elementId, isValid, labelText) {
-        const element = document.getElementById(elementId);
-        if (isValid) {
-            element.textContent = `✅ ${labelText}`;
-            element.className = "requirement valid";
-        } else {
-            element.textContent = `❌ ${labelText}`;
-            element.className = "requirement invalid";
-        }
+        return allSatisfied;
     }
     
     function validatePasswordMatch() {
