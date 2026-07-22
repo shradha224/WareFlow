@@ -1,16 +1,13 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from config import Config
+import resend
+import os
+
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 def send_otp_email(to_email: str, otp: str, purpose: str) -> bool:
     print("send_email() called", flush=True)
     print(f"Sending email to : {to_email}", flush=True)
-    print(f"SMTP USER: {Config.SMTP_USER}", flush=True)
-    print(f"SMTP HOST: {Config.SMTP_HOST}", flush=True)
-    print(f"SMTP PORT: {Config.SMTP_PORT}", flush=True)
 
-    subject = f"WareFlow - {purpose} OTP Verification"
+    subject = "WareFlow OTP Verification"
     
     # HTML formatted email body
     html_body = f"""
@@ -38,50 +35,28 @@ def send_otp_email(to_email: str, otp: str, purpose: str) -> bool:
         </body>
     </html>
     """
-    
-    text_body = f"Hello,\n\nYour WareFlow {purpose} verification code is: {otp}\n\nThis code is valid for 10 minutes."
 
-    if not Config.SMTP_USER or not Config.SMTP_PASSWORD:
-        print("SMTP ERROR : SMTP credentials not configured in environment variables", flush=True)
+    if not resend.api_key:
+        print("RESEND ERROR : RESEND_API_KEY not configured in environment variables", flush=True)
         _print_debug_otp(to_email, otp)
         return True
 
-    print("Connecting SMTP...", flush=True)
+    print("Sending email via Resend API...", flush=True)
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = Config.SMTP_FROM_EMAIL
-        msg["To"] = to_email
-
-        # Attach text and HTML versions
-        msg.attach(MIMEText(text_body, "plain"))
-        msg.attach(MIMEText(html_body, "html"))
-
-        # Smart connection based on port
-        if Config.SMTP_PORT == 465:
-            server = smtplib.SMTP_SSL(Config.SMTP_HOST, Config.SMTP_PORT, timeout=10)
-        else:
-            server = smtplib.SMTP(Config.SMTP_HOST, Config.SMTP_PORT, timeout=10)
-            if Config.SMTP_PORT == 587:
-                server.starttls()
-            
-        print("SMTP Connected", flush=True)
-        server.login(Config.SMTP_USER, Config.SMTP_PASSWORD)
-        
-        print("Sending email...", flush=True)
-        server.sendmail(Config.SMTP_FROM_EMAIL, to_email, msg.as_string())
-        server.quit()
-        
-        print("Email Sent Successfully", flush=True)
+        r = resend.Emails.send({
+            "from": "WareFlow <onboarding@resend.dev>",
+            "to": to_email,
+            "subject": subject,
+            "html": html_body
+        })
+        print(f"Email Sent Successfully, Resend Response: {r}", flush=True)
         return True
         
     except Exception as e:
-        print(f"SMTP ERROR : {e}", flush=True)
+        print(f"RESEND ERROR : {e}", flush=True)
         _print_debug_otp(to_email, otp)
         return False
 
 def _print_debug_otp(email: str, otp: str):
     print("DEBUG OTP", flush=True)
     print(otp, flush=True)
-
-
