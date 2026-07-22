@@ -31,7 +31,8 @@
     margin-bottom:14px;
 }
 
-.form-group input{
+.form-group input,
+.form-group select {
     width:100%;
     height:64px;
     border:2px solid #ECECEC;
@@ -44,8 +45,37 @@
     transition:.25s;
 }
 
-.form-group input:focus{
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 22px center;
+    background-size: 14px 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
     border-color:#5AA4F5;
+    box-shadow: 0 0 8px rgba(90,164,245,0.4);
+}
+
+.form-group select:hover {
+    border-color: #5AA4F5;
+}
+
+.display-box {
+    width: 100%;
+    min-height: 64px;
+    padding: 18px 22px;
+    border: 2px solid #ECECEC;
+    border-radius: 22px;
+    background-color: #FAFAFA;
+    font-size: 20px;
+    color: #444;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .quality-buttons{

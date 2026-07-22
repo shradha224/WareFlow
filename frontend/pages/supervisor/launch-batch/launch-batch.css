@@ -4,7 +4,9 @@
     min-height:100vh;
 }
 
-.batch-card{
+.batch-card,
+.initialize-card,
+.stage-card {
     background:#fff;
     border-radius:28px;
     padding:34px 40px;
@@ -12,7 +14,9 @@
     margin-bottom:34px;
 }
 
-.batch-card h2{
+.batch-card h2,
+.initialize-card h2,
+.stage-card h2 {
     font-size:22px;
     font-weight:700;
     color:#142A63;
@@ -152,6 +156,27 @@
         width:100%;
         height:56px;
 }
+}
+
+.remove-btn {
+    background: #C62828;
+    color: white;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.remove-btn:hover {
+    background: #B71C1C;
+    transform: scale(1.02);
+}
+
+.remove-btn:active {
+    transform: scale(0.98);
 }
 
 @media(max-width:480px){

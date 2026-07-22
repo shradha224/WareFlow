@@ -86,6 +86,17 @@
                 class="submit-btn">
                 Mark Completed
             </button>
+            <div id="consumption-progress">
+                <div id="next-stage-container" style="display: none; margin-top: 20px; border: 1px solid var(--border-color, #eee); padding: 20px; border-radius: 12px; background: #FAFAFA; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
+                    <p style="color: var(--primary-color, #1a56db); font-weight: 600; margin-bottom: 15px; font-size: 1.05rem;">Stage completed! Send component to next stage:</p>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="font-weight: 500; font-size: 0.95rem;">Send To Stage</label>
+                        <select id="next-stage-select" style="margin-top: 8px;"></select>
+                    </div>
+                    <button id="send-stage-btn" class="submit-btn" style="width: 100%; margin-top: 10px;">Send</button>
+                </div>
+                <div id="progress-qty-container" style="display: none; margin-top: 20px; padding: 15px; border-radius: 8px; background: #e0f2fe; color: #0369a1; font-weight: 600; text-align: center; font-size: 1.1rem; border: 1px solid #bae6fd;"></div>
+            </div>
         </section>
     </main>
 </div>

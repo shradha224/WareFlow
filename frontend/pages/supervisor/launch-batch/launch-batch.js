@@ -109,6 +109,7 @@ function addStageToTable(stage) {
             <td>
                 <button
                     type="button"
+                    class="remove-btn"
                     onclick="removeStage('${stage.stage_name}')">
                     Remove
                 </button>

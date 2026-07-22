@@ -52,14 +52,23 @@
                 Quality Check
             </h2>
             <form id="qualityForm">
-                <div class="form-group">
+                 <div class="form-group">
                     <label for="productId">
-                        Enter ID
+                        Product ID
                     </label>
-                    <input
-                        type="text"
-                        id="productId"
-                        placeholder="Enter Finished Product ID">
+                    <select id="productId" class="styled-select">
+                        <option value="">Select Product ID</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Batch ID</label>
+                    <div id="display-batch-id" class="display-box">--</div>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Product Name</label>
+                    <div id="display-product-name" class="display-box">--</div>
                 </div>
                 <div class="quality-buttons">
                     <button

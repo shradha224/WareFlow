@@ -16,13 +16,8 @@ function initializePage() {
 }
 
 function replaceInputWithSelect() {
-    const input = document.getElementById("productId");
-    if (input && input.tagName === "INPUT") {
-        const select = document.createElement("select");
-        select.id = "productId";
-        select.className = input.className;
-        input.parentNode.replaceChild(select, input);
-        
+    const select = document.getElementById("productId");
+    if (select) {
         select.addEventListener("change", () => {
             const selectedOpt = select.options[select.selectedIndex];
             const pName = selectedOpt ? selectedOpt.dataset.productName || "" : "";
@@ -34,27 +29,6 @@ function replaceInputWithSelect() {
             const displayProduct = document.getElementById("display-product-name");
             if (displayProduct) displayProduct.textContent = pName || "--";
         });
-
-        // Add container div for batch ID and product name below select
-        const container = select.parentNode;
-        
-        const batchDiv = document.createElement("div");
-        batchDiv.className = "form-group";
-        batchDiv.style.marginTop = "15px";
-        batchDiv.innerHTML = `
-            <label>Batch ID</label>
-            <div id="display-batch-id" style="padding: 10px; border: 1px solid var(--border-color, #ccc); border-radius: 6px; background-color: var(--card-bg, #f9f9f9);">--</div>
-        `;
-        container.appendChild(batchDiv);
-
-        const nameDiv = document.createElement("div");
-        nameDiv.className = "form-group";
-        nameDiv.style.marginTop = "15px";
-        nameDiv.innerHTML = `
-            <label>Product Name</label>
-            <div id="display-product-name" style="padding: 10px; border: 1px solid var(--border-color, #ccc); border-radius: 6px; background-color: var(--card-bg, #f9f9f9);">--</div>
-        `;
-        container.appendChild(nameDiv);
     }
 }
 

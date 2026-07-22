@@ -118,7 +118,6 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const user_id = userIdInput.value.trim();
         const full_name = document.getElementById("fullName").value.trim();
-        const username = document.getElementById("username").value.trim();
         const email = document.getElementById("email").value.trim();
         const phone_number = document.getElementById("phoneNumber").value.trim();
         const department = document.getElementById("department").value.trim();
@@ -151,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({
                     user_id,
                     full_name,
-                    username,
+                    username: "",
                     email,
                     phone_number,
                     department,

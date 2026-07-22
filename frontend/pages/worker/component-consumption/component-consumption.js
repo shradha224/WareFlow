@@ -142,8 +142,10 @@ function renderBatchSelector(batches) {
             selectedBatchId = batch.batch_id;
             loadcomponentsForBatch(batch.batch_id);
             loadStagesForBatch(batch.batch_id);
-            const progressEl = document.getElementById("consumption-progress");
-            if (progressEl) progressEl.innerHTML = "";
+            const nextStageContainer = document.getElementById("next-stage-container");
+            const progressQtyContainer = document.getElementById("progress-qty-container");
+            if (nextStageContainer) nextStageContainer.style.display = "none";
+            if (progressQtyContainer) progressQtyContainer.style.display = "none";
         });
         selector.appendChild(btn);
     });
@@ -187,26 +189,27 @@ async function submitConsumption() {
             throw new Error(data.error || "Failed to record consumption");
         }
 
-        if (data.target_reached && data.remaining_stages && data.remaining_stages.length > 0) {
-            const progressEl = document.getElementById("consumption-progress");
-            if (progressEl) {
-                let optionsHtml = data.remaining_stages.map(rs => `<option value="${rs}">${rs}</option>`).join("");
-                progressEl.innerHTML = `
-                    <div style="margin-top: 15px; border: 1px solid var(--border-color, #eee); padding: 15px; border-radius: 8px; background: var(--card-bg, #fcfcfc);">
-                        <p style="color: var(--primary-color, #4f46e5); font-weight: bold; margin-bottom: 10px;">Stage completed! Send component to next stage:</p>
-                        <div class="form-group" style="margin-bottom: 10px;">
-                            <label>Send To Stage</label>
-                            <select id="next-stage-select" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color, #ccc);">${optionsHtml}</select>
-                        </div>
-                        <button id="send-stage-btn" class="submit-btn" style="width: 100%;">Send</button>
-                    </div>
-                `;
+        const nextStageContainer = document.getElementById("next-stage-container");
+        const nextStageSelect = document.getElementById("next-stage-select");
+        const progressQtyContainer = document.getElementById("progress-qty-container");
 
-                document.getElementById("send-stage-btn").addEventListener("click", async () => {
-                    const nextStage = document.getElementById("next-stage-select").value;
+        if (nextStageContainer) nextStageContainer.style.display = "none";
+        if (progressQtyContainer) progressQtyContainer.style.display = "none";
+
+        if (data.target_reached && data.remaining_stages && data.remaining_stages.length > 0) {
+            if (nextStageContainer && nextStageSelect) {
+                nextStageSelect.innerHTML = data.remaining_stages.map(rs => `<option value="${rs}">${rs}</option>`).join("");
+                nextStageContainer.style.display = "block";
+
+                const sendBtn = document.getElementById("send-stage-btn");
+                const newSendBtn = sendBtn.cloneNode(true);
+                sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
+
+                newSendBtn.addEventListener("click", async () => {
+                    const nextStage = nextStageSelect.value;
                     if (!nextStage) return;
                     try {
-                        const transResponse = await fetch(`http://localhost:5000/api/batches/${selectedBatchId}/transition`, {
+                        const transResponse = await fetch(`${API_BASE_URL}/batches/${selectedBatchId}/transition`, {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
@@ -225,7 +228,7 @@ async function submitConsumption() {
                         alert(`Component transitioned to ${nextStage}!`);
                         document.getElementById("componentId").value = "";
                         document.getElementById("stage").value = "";
-                        progressEl.innerHTML = "";
+                        nextStageContainer.style.display = "none";
                         initializePage();
                     } catch (err) {
                         alert(err.message);
@@ -235,13 +238,11 @@ async function submitConsumption() {
         } else if (data.target_reached && (!data.remaining_stages || data.remaining_stages.length === 0)) {
             document.getElementById("componentId").value = "";
             document.getElementById("stage").value = "";
-            const progressEl = document.getElementById("consumption-progress");
-            if (progressEl) progressEl.innerHTML = "";
             initializePage();
         } else {
-            const progressEl = document.getElementById("consumption-progress");
-            if (progressEl) {
-                progressEl.innerHTML = `Processed Qty: ${data.completed_qty} / ${data.target_qty}`;
+            if (progressQtyContainer) {
+                progressQtyContainer.textContent = `Processed Qty: ${data.completed_qty} / ${data.target_qty}`;
+                progressQtyContainer.style.display = "block";
             }
         }
     } catch (error) {
