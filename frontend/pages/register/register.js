@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const passwordInput = document.getElementById("password");
     const confirmPasswordInput = document.getElementById("confirmPassword");
     
-    // Live User ID Debounce
     let userIdTimeout = null;
     let isUserIdAvailable = false;
     
@@ -50,8 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }, 400);
     });
-    
-    // Live Password requirements checking
+   
     passwordInput.addEventListener("input", validatePasswordRequirements);
     
     function validatePasswordRequirements() {
@@ -87,7 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     
-    // Live Passwords Match
     confirmPasswordInput.addEventListener("input", validatePasswordMatch);
     
     function validatePasswordMatch() {
@@ -111,8 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return false;
         }
     }
-    
-    // Submit register form
+
     registerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         
@@ -166,8 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert(data.error || "Registration failed");
                 return;
             }
-            
-            // Save email session parameter for verification page
+     
             sessionStorage.setItem("verify_email", email);
             
             alert("Registration details submitted! A verification code has been sent to your email.");

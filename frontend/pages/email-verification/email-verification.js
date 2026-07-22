@@ -4,8 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const verifyForm = document.getElementById("verifyForm");
     const resendBtn = document.getElementById("resendBtn");
     const countdownDiv = document.getElementById("countdown");
-    
-    // Get email from sessionStorage or URL query param
+
     let email = sessionStorage.getItem("verify_email");
     if (!email) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -20,7 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
     
     emailInput.value = email;
     
-    // Manage Resend Timer Cooldown
     let cooldownSeconds = 0;
     let countdownInterval = null;
     
@@ -40,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1000);
     }
     
-    // Verify code submit
     verifyForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         
@@ -73,8 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Unable to connect to the server.");
         }
     });
-    
-    // Resend code action
+ 
     resendBtn.addEventListener("click", async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/send-registration-otp`, {

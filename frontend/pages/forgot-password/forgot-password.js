@@ -25,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             
-            // Save email session parameter for reset password page
             sessionStorage.setItem("reset_email", email);
             
             alert("A password reset verification code has been sent to your email.");
