@@ -1,10 +1,11 @@
-import sib_api_v3_sdk
-from sib_api_v3_sdk.rest import ApiException
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import os
 
 def send_otp_email(to_email: str, otp: str, purpose: str) -> bool:
     print("send_email() called", flush=True)
-    print(f"Sending email to : {to_email}", flush=True)
+    print(f"Sending email to: {to_email}", flush=True)
 
     subject = "WareFlow OTP Verification"
     
@@ -34,48 +35,56 @@ def send_otp_email(to_email: str, otp: str, purpose: str) -> bool:
         </body>
     </html>
     """
+    
+    text_body = f"Hello,\n\nYour WareFlow {purpose} verification code is: {otp}\n\nThis code is valid for 10 minutes."
 
-    api_key = os.getenv("BREVO_API_KEY")
-    sender_email = os.getenv("BREVO_SENDER_EMAIL")
+    smtp_host = os.getenv("SMTP_HOST")
+    smtp_port_str = os.getenv("SMTP_PORT")
+    smtp_email = os.getenv("SMTP_EMAIL")
+    smtp_password = os.getenv("SMTP_PASSWORD")
 
-    if not api_key:
-        print("BREVO ERROR : BREVO_API_KEY not configured in environment variables", flush=True)
+    if not smtp_host or not smtp_port_str or not smtp_email or not smtp_password:
+        print("SMTP ERROR: SMTP credentials not configured in environment variables", flush=True)
         _print_debug_otp(to_email, otp)
         return True
 
-    if not sender_email:
-        print("BREVO ERROR : BREVO_SENDER_EMAIL not configured in environment variables", flush=True)
-        _print_debug_otp(to_email, otp)
-        return True
-
-    print("Sending OTP through Brevo...", flush=True)
     try:
-        # Configure API key authorization: api-key
-        configuration = sib_api_v3_sdk.Configuration()
-        configuration.api_key['api-key'] = api_key
-
-        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
-
-        # Define email details
-        sender = {"name": "WareFlow", "email": sender_email}
-        to = [{"email": to_email}]
-        send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
-            to=to,
-            sender=sender,
-            subject=subject,
-            html_content=html_body
-        )
-
-        api_response = api_instance.send_transac_email(send_smtp_email)
-        print(f"Email delivered successfully. Response: {api_response}", flush=True)
-        return True
-        
-    except ApiException as e:
-        print(f"Brevo Error: {e}", flush=True)
+        smtp_port = int(smtp_port_str)
+    except ValueError as e:
+        print(f"SMTP ERROR: Invalid SMTP_PORT '{smtp_port_str}': {e}", flush=True)
         _print_debug_otp(to_email, otp)
         return False
+
+    print("Connecting SMTP...", flush=True)
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = smtp_email
+        msg["To"] = to_email
+
+        # Attach text and HTML versions
+        msg.attach(MIMEText(text_body, "plain"))
+        msg.attach(MIMEText(html_body, "html"))
+
+        # Connection setup
+        if smtp_port == 465:
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
+        else:
+            server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+            server.starttls()
+            
+        server.login(smtp_email, smtp_password)
+        print("SMTP Login Successful", flush=True)
+        
+        print("Sending Email...", flush=True)
+        server.sendmail(smtp_email, to_email, msg.as_string())
+        server.quit()
+        
+        print("Email Sent Successfully", flush=True)
+        return True
+        
     except Exception as e:
-        print(f"Unexpected Brevo Error: {e}", flush=True)
+        print(f"SMTP ERROR: {e}", flush=True)
         _print_debug_otp(to_email, otp)
         return False
 
