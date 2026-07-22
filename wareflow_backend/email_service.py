@@ -1,7 +1,6 @@
-import resend
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
 import os
-
-resend.api_key = os.getenv("RESEND_API_KEY")
 
 def send_otp_email(to_email: str, otp: str, purpose: str) -> bool:
     print("send_email() called", flush=True)
@@ -36,24 +35,47 @@ def send_otp_email(to_email: str, otp: str, purpose: str) -> bool:
     </html>
     """
 
-    if not resend.api_key:
-        print("RESEND ERROR : RESEND_API_KEY not configured in environment variables", flush=True)
+    api_key = os.getenv("BREVO_API_KEY")
+    sender_email = os.getenv("BREVO_SENDER_EMAIL")
+
+    if not api_key:
+        print("BREVO ERROR : BREVO_API_KEY not configured in environment variables", flush=True)
         _print_debug_otp(to_email, otp)
         return True
 
-    print("Sending email via Resend API...", flush=True)
+    if not sender_email:
+        print("BREVO ERROR : BREVO_SENDER_EMAIL not configured in environment variables", flush=True)
+        _print_debug_otp(to_email, otp)
+        return True
+
+    print("Sending OTP through Brevo...", flush=True)
     try:
-        r = resend.Emails.send({
-            "from": "WareFlow <onboarding@resend.dev>",
-            "to": to_email,
-            "subject": subject,
-            "html": html_body
-        })
-        print(f"Email Sent Successfully, Resend Response: {r}", flush=True)
+        # Configure API key authorization: api-key
+        configuration = sib_api_v3_sdk.Configuration()
+        configuration.api_key['api-key'] = api_key
+
+        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+
+        # Define email details
+        sender = {"name": "WareFlow", "email": sender_email}
+        to = [{"email": to_email}]
+        send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+            to=to,
+            sender=sender,
+            subject=subject,
+            html_content=html_body
+        )
+
+        api_response = api_instance.send_transac_email(send_smtp_email)
+        print(f"Email delivered successfully. Response: {api_response}", flush=True)
         return True
         
+    except ApiException as e:
+        print(f"Brevo Error: {e}", flush=True)
+        _print_debug_otp(to_email, otp)
+        return False
     except Exception as e:
-        print(f"RESEND ERROR : {e}", flush=True)
+        print(f"Unexpected Brevo Error: {e}", flush=True)
         _print_debug_otp(to_email, otp)
         return False
 

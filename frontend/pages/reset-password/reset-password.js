@@ -106,11 +106,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         if (password === confirm) {
-            matchDiv.textContent = "✅ Passwords match";
+            matchDiv.textContent = "Passwords match";
             matchDiv.className = "status-indicator status-available";
             return true;
         } else {
-            matchDiv.textContent = "❌ Passwords do not match";
+            matchDiv.textContent = "Passwords do not match";
             matchDiv.className = "status-indicator status-taken";
             return false;
         }

@@ -33,17 +33,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
                 
                 if (data.available) {
-                    statusDiv.textContent = "✅ Available";
+                    statusDiv.textContent = "Available";
                     statusDiv.className = "status-indicator status-available";
                     isUserIdAvailable = true;
                 } else {
-                    statusDiv.textContent = `❌ ${data.error || "User ID already exists"}`;
+                    statusDiv.textContent = `${data.error || "User ID already exists"}`;
                     statusDiv.className = "status-indicator status-taken";
                     isUserIdAvailable = false;
                 }
             } catch (err) {
                 console.error(err);
-                statusDiv.textContent = "⚠️ Unable to verify ID availability";
+                statusDiv.textContent = "Unable to verify ID availability";
                 statusDiv.className = "status-indicator";
                 isUserIdAvailable = false;
             }
@@ -135,11 +135,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         if (password === confirm) {
-            matchDiv.textContent = "✅ Passwords match";
+            matchDiv.textContent = "Passwords match";
             matchDiv.className = "status-indicator status-available";
             return true;
         } else {
-            matchDiv.textContent = "❌ Passwords do not match";
+            matchDiv.textContent = "Passwords do not match";
             matchDiv.className = "status-indicator status-taken";
             return false;
         }
