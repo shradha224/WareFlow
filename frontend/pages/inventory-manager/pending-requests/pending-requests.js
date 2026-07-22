@@ -87,10 +87,10 @@ async function loadProductionRequests() {
                             <span class="status ${statusClass}">${batch.status}</span>
                         </td>
                         <td>
-                            ${canDispatch 
-                                ? `<button class="dispatch-btn primary-btn" onclick="dispatchcomponents('${batch.batch_id}')">Dispatch</button>`
-                                : `<button class="dispatch-btn primary-btn" disabled style="background: #ccc; cursor: not-allowed;">Dispatched</button>`
-                            }
+                            ${canDispatch
+                            ? `<button class="dispatch-btn primary-btn" onclick="dispatchcomponents('${batch.batch_id}')">Dispatch</button>`
+                            : `<button class="dispatch-btn primary-btn" disabled style="background: #ccc; cursor: not-allowed;">Dispatched</button>`
+                        }
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -102,9 +102,9 @@ async function loadProductionRequests() {
     }
 }
 
-window.approveRequest = async function(requestId) {
+window.approveRequest = async function (requestId) {
     try {
-        const response = await fetch(`http://localhost:5000/api/material-requests/${requestId}`, {
+        const response = await fetch(`${API_BASE_URL}/material-requests/${requestId}`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
@@ -123,9 +123,9 @@ window.approveRequest = async function(requestId) {
     }
 };
 
-window.dispatchcomponents = async function(batchId) {
+window.dispatchcomponents = async function (batchId) {
     try {
-        const response = await fetch(`http://localhost:5000/api/batches/${batchId}/dispatch`, {
+        const response = await fetch(`${API_BASE_URL}/batches/${batchId}/dispatch`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`

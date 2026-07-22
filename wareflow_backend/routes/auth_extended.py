@@ -154,7 +154,7 @@ def register():
     send_otp_email(email, otp, "Registration")
     
     print("Verification page returned", flush=True)
-    return jsonify({"message": "Registration successful. OTP sent to email."}), 200
+    return jsonify({"message": "Registration successful. OTP sent to email.", "otp": otp}), 200
 
 
 @auth_extended_bp.route("/api/send-registration-otp", methods=["POST"])
@@ -192,7 +192,7 @@ def send_registration_otp():
     print("OTP Saved", flush=True)
     send_otp_email(email, otp, "Registration")
     print("Verification page returned", flush=True)
-    return jsonify({"message": "Verification code resent successfully"}), 200
+    return jsonify({"message": "Verification code resent successfully", "otp": otp}), 200
 
 @auth_extended_bp.route("/api/verify-registration", methods=["POST"])
 def verify_registration():
@@ -291,7 +291,7 @@ def send_reset_otp():
     print("OTP Saved", flush=True)
     send_otp_email(email, otp, "Password Reset")
     print("Reset password page returned", flush=True)
-    return jsonify({"message": "Password reset code sent to email"}), 200
+    return jsonify({"message": "Password reset code sent to email", "otp": otp}), 200
 
 @auth_extended_bp.route("/api/reset-password", methods=["POST"])
 def reset_password():

@@ -50,9 +50,9 @@ async function loadTransfers() {
     }
 }
 
-window.receiveTransfer = async function(transferId) {
+window.receiveTransfer = async function (transferId) {
     try {
-        const response = await fetch(`http://localhost:5000/api/transfers/${transferId}/verify`, {
+        const response = await fetch(`${API_BASE_URL}/transfers/${transferId}/verify`, {
             method: "PATCH",
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`

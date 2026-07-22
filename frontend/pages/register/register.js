@@ -201,6 +201,17 @@ document.addEventListener("DOMContentLoaded", () => {
      
             sessionStorage.setItem("verify_email", email);
             
+            try {
+                showLoading("Sending verification email...");
+                await sendOtpEmail(email, data.otp, "Registration");
+                hideLoading();
+            } catch (emailErr) {
+                hideLoading();
+                console.error("EmailJS failed:", emailErr);
+                alert("Failed to send OTP. Please try again.");
+                return;
+            }
+
             alert("Registration details submitted! A verification code has been sent to your email.");
             window.location.href = "../email-verification/email-verification.html";
             

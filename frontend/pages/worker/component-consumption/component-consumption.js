@@ -177,7 +177,7 @@ async function submitConsumption() {
                 batch_id: selectedBatchId,
                 component_id: componentId,
                 stage_name: stage,
-                qty_used: null, // Let the backend lookup the BOM quantity automatically
+                qty_used: null,
                 units_completed: 1
             })
         });

@@ -190,6 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
  
     resendBtn.addEventListener("click", async () => {
         try {
+            showLoading("Requesting new verification code...");
             const response = await fetch(`${API_BASE_URL}/send-reset-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -199,7 +200,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
             
             if (!response.ok) {
+                hideLoading();
                 alert(data.error || "Resend failed");
+                return;
+            }
+            
+            try {
+                showLoading("Sending verification email...");
+                await sendOtpEmail(email, data.otp, "Password Reset");
+                hideLoading();
+            } catch (emailErr) {
+                hideLoading();
+                console.error("EmailJS failed:", emailErr);
+                alert("Failed to send OTP. Please try again.");
                 return;
             }
             
@@ -207,6 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
             startResendCooldown();
             
         } catch (err) {
+            hideLoading();
             console.error(err);
             alert("Unable to connect to the server.");
         }
