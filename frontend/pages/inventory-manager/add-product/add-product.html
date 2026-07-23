@@ -56,21 +56,21 @@
                 </div>
 
                 <!-- Product Workflow Section -->
-                <div class="workflow-section-title" style="margin-top: 20px;">
-                    <label style="font-size: 22px; font-weight: 500; color: #1d1d1d; display: block; margin-bottom: 14px;">Product Workflow (Stages)</label>
+                <div class="workflow-section-title">
+                    <label>Product Workflow (Stages)</label>
                 </div>
                 
-                <div class="component-input-row" style="display: flex; gap: 28px; align-items: end; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 14px;">
-                        <label for="stage-name-input" style="font-size: 22px; font-weight: 500; color: #1d1d1d;">Stage Name</label>
+                <div class="stage-input-row">
+                    <div class="stage-name-group">
+                        <label for="stage-name-input">Stage Name</label>
                         <input type="text" id="stage-name-input" placeholder="e.g. Assembly, Painting, Balancing, Final QC...">
                     </div>
-                    <div class="add-btn-container" style="margin-bottom: 0;">
-                        <button type="button" id="add-stage-btn" class="add-btn" style="width: 200px;">Add Stage</button>
+                    <div class="add-btn-container">
+                        <button type="button" id="add-stage-btn" class="add-stage-btn">Add Stage</button>
                     </div>
                 </div>
 
-                <div class="added-components-section" style="margin-top: 20px;">
+                <div class="added-stages-section">
                     <label>Stages Added (Workflow Sequence)</label>
                     <div id="stage-list"></div>
                 </div>

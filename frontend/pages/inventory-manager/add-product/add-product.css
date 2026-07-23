@@ -332,3 +332,217 @@
         border-radius:16px;
     }
 }
+
+/* ==========================================================================
+   Product Workflow (Stages) Section Styles
+   ========================================================================== */
+
+/* Spacing and typography for section titles */
+.workflow-section-title {
+    margin-top: 40px;
+}
+
+.workflow-section-title label,
+.added-stages-section label {
+    font-size: 22px;
+    font-weight: 500;
+    color: #1D1D1D;
+    display: block;
+    margin-bottom: 14px;
+}
+
+/* Stage Name Input Row Layout - Desktop flex equivalent */
+.stage-input-row {
+    display: flex;
+    gap: 28px;
+    align-items: end;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.stage-name-group {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.stage-name-group label {
+    font-size: 22px;
+    font-weight: 500;
+    color: #1D1D1D;
+}
+
+/* Make Stage Input visually identical to Product Name and components inputs */
+#stage-name-input {
+    width: 100%;
+    height: 82px;
+    border: 2px solid #ECECEC;
+    border-radius: 24px;
+    background: #fff;
+    padding: 0 32px;
+    font-size: 22px;
+    font-family: Poppins,sans-serif;
+    outline: none;
+    box-shadow: 0 8px 18px rgba(0,0,0,.10);
+    transition: .25s;
+}
+
+#stage-name-input:focus {
+    border-color: #2367C1;
+}
+
+/* Custom styling for Add Stage button - matching app primary/brand colors */
+.add-stage-btn {
+    width: 200px;
+    height: 82px;
+    border-radius: 22px;
+    border: none;
+    background: #2367C1;
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 22px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 8px 18px rgba(35, 103, 193, 0.15);
+}
+
+.add-stage-btn:hover {
+    background: #1D54A1;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(35, 103, 193, 0.25);
+}
+
+.add-stage-btn:active {
+    transform: translateY(1px);
+}
+
+/* Stages Added Container - mimicking #component-list style */
+.added-stages-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+#stage-list {
+    width: 100%;
+    min-height: 120px;
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 18px;
+    border: 2px solid #ECECEC;
+    border-radius: 22px;
+    background: #FAFAFA;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Centered empty state label text */
+#stage-list p {
+    text-align: center !important;
+    color: #999999 !important;
+    font-size: 18px !important;
+    padding: 30px 10px !important;
+    margin: 0 !important;
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* Dynamic Stage Row/Card items - styled like components but with hover/rounded borders */
+.added-stage-item {
+    margin-bottom: 0 !important; /* Managed by #stage-list flex layout gap */
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E6E6E6 !important;
+    border-radius: 18px !important;
+    padding: 18px 22px !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,.08) !important;
+    transition: all 0.25s ease !important;
+}
+
+.added-stage-item:hover {
+    border-color: #2367C1 !important;
+    box-shadow: 0 6px 14px rgba(35, 103, 193, 0.12) !important;
+}
+
+.added-stage-item span {
+    font-size: 18px !important;
+    color: #31363F !important;
+}
+
+.added-stage-item span strong {
+    font-weight: 600 !important;
+    color: #2367C1 !important;
+    margin-right: 8px !important;
+}
+
+/* Move Up / Down ordering buttons in stage item */
+.added-stage-item button[onclick^="moveStage"] {
+    background: #F3F4F6 !important;
+    color: #4B5563 !important;
+    border: 1px solid #D1D5DB !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.added-stage-item button[onclick^="moveStage"]:hover:not([disabled]) {
+    background: #E5E7EB !important;
+    color: #111827 !important;
+}
+
+.added-stage-item button[onclick^="moveStage"][disabled] {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+    background: #F9FAFB !important;
+}
+
+/* Remove button in stage item - matching components remove button style */
+.added-stage-item button[onclick^="removeStage"] {
+    background: #FADADA !important;
+    color: #C62828 !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 8px 16px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+}
+
+.added-stage-item button[onclick^="removeStage"]:hover {
+    background: #F4C5C5 !important;
+}
+
+/* Responsive spacing for smaller screens */
+@media (max-width: 768px) {
+    .stage-input-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 18px;
+    }
+    
+    .stage-name-group {
+        width: 100%;
+    }
+    
+    #stage-name-input {
+        height: 68px !important;
+        font-size: 18px !important;
+        padding: 0 20px !important;
+    }
+    
+    .add-stage-btn {
+        width: 100% !important;
+        height: 68px !important;
+        font-size: 18px !important;
+        border-radius: 16px !important;
+    }
+}
