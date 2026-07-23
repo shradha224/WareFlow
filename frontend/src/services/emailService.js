@@ -1,5 +1,3 @@
-// src/services/emailService.js
-
 function showLoading(message = "Sending verification code...") {
     let overlay = document.getElementById("loading-overlay");
     if (!overlay) {
@@ -47,7 +45,6 @@ async function sendOtpEmail(email, otp, purpose) {
     );
 }
 
-// Export if module environment
 if (typeof module !== "undefined" && module.exports) {
     module.exports = { sendOtpEmail, showLoading, hideLoading };
 }

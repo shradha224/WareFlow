@@ -80,7 +80,6 @@ function addComponentToList() {
     const selectedOption = select.options[select.selectedIndex];
     const part_name = selectedOption.dataset.name;
 
-    // Check if component already added
     if (addedcomponents.some(c => c.component_id === component_id)) {
         alert("Component already added");
         return;

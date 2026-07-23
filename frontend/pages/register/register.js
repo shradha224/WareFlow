@@ -70,7 +70,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (requirementsContainer) {
             requirementsContainer.style.display = "block";
-            // trigger reflow/repaint to ensure transition plays
             requirementsContainer.offsetHeight;
             requirementsContainer.classList.add("show");
         }

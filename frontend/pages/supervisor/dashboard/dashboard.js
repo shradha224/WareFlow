@@ -18,11 +18,9 @@ async function loadDashboard() {
         const pass = data.qc_pass_percentage !== null ? data.qc_pass_percentage : 0;
         document.getElementById("qc-pass").textContent = Number(pass).toFixed(2) + "%";
         document.getElementById("qc-fail").textContent = (100 - Number(pass)).toFixed(2) + "%";
-        
-        // 1. Process Batch Progress & Retention
+   
         const newActiveBatchIds = new Set(data.batch_progress.map(b => b.batch_id));
-        
-        // Check for batches that transitioned from active to complete (missing from API response)
+
         for (const oldId of activeBatchIds) {
             if (!newActiveBatchIds.has(oldId)) {
                 const prevBatch = lastBatchProgress.find(b => b.batch_id === oldId);
@@ -35,8 +33,7 @@ async function loadDashboard() {
                 }
             }
         }
-        
-        // Also capture batches returned with status 'Complete' or percent_complete = 100
+ 
         data.batch_progress.forEach(batch => {
             if (batch.status === 'Complete' || batch.percent_complete >= 100) {
                 if (!completedBatchesRetention.has(batch.batch_id)) {
@@ -50,16 +47,14 @@ async function loadDashboard() {
         
         activeBatchIds = newActiveBatchIds;
         lastBatchProgress = data.batch_progress;
-        
-        // Clean up retention older than 45 seconds
+   
         const now = Date.now();
         for (const [bid, info] of completedBatchesRetention.entries()) {
             if (now - info.completedAt > 45000) {
                 completedBatchesRetention.delete(bid);
             }
         }
-        
-        // Combine active (in-progress) and retained completed batches for display
+       
         const displayList = [];
         data.batch_progress.forEach(batch => {
             if (batch.status !== 'Complete' && batch.percent_complete < 100) {
@@ -79,7 +74,6 @@ async function loadDashboard() {
             });
         }
         
-        // Render the progress list
         const progressList = document.getElementById("batches-progress-list");
         if (progressList) {
             progressList.innerHTML = "";
