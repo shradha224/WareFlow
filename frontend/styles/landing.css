@@ -333,3 +333,211 @@ footer{
         display:none;
     }
 }
+
+/* Responsive styles for tablets (~768px) and mobile devices (~480px) */
+
+html, body {
+    overflow-x: hidden;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 768px) {
+    header {
+        position: static;
+    }
+
+    .navbar {
+        height: auto;
+        padding: 20px 15px;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .logo img {
+        width: 140px;
+    }
+
+    .nav-links {
+        display: flex; /* Override display: none from max-width: 1000px */
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .nav-links a {
+        font-size: 16px;
+    }
+
+    .login-btn {
+        padding: 10px 24px;
+        font-size: 16px;
+        width: 100%;
+        max-width: 200px;
+        text-align: center;
+    }
+
+    .hero {
+        margin-top: 0;
+        height: auto;
+        min-height: 500px;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-overlay {
+        position: relative;
+        width: 100%;
+        padding: 60px 20px;
+    }
+
+    .hero-content {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 36px;
+        line-height: 1.25;
+    }
+
+    .hero p {
+        font-size: 16px;
+        line-height: 1.6;
+        margin-top: 15px;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .explore-btn, .secondary-btn {
+        font-size: 16px;
+        padding: 12px 28px;
+    }
+
+    section {
+        padding: 50px 5%;
+    }
+
+    section h2 {
+        font-size: 32px;
+        margin-bottom: 15px;
+    }
+
+    .section-description {
+        font-size: 16px;
+        margin-bottom: 40px;
+    }
+
+    .feature-card {
+        padding: 25px;
+    }
+
+    .feature-card h3 {
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+
+    .arrow {
+        transform: rotate(90deg);
+        display: inline-block;
+        margin: 10px 0;
+    }
+
+    .role-card {
+        padding: 25px;
+    }
+
+    .about p {
+        width: 100%;
+        font-size: 16px;
+        margin: 15px 0;
+    }
+
+    .cta p {
+        font-size: 16px;
+        margin: 15px 0 25px;
+    }
+
+    .cta-button {
+        padding: 14px 35px;
+        font-size: 16px;
+    }
+
+    footer {
+        padding: 40px 5% 20px;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        gap: 30px;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-content div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        padding: 15px 10px;
+    }
+
+    .nav-links {
+        gap: 12px;
+    }
+
+    .nav-links a {
+        font-size: 15px;
+    }
+
+    .hero h1 {
+        font-size: 28px;
+    }
+
+    .hero p {
+        font-size: 15px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .hero-buttons a {
+        width: 100%;
+        max-width: 280px;
+        text-align: center;
+        padding: 12px 20px;
+    }
+
+    section {
+        padding: 40px 15px;
+    }
+
+    section h2 {
+        font-size: 24px;
+    }
+
+    .cta-button {
+        width: 100%;
+        max-width: 280px;
+        text-align: center;
+    }
+}
